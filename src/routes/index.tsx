@@ -50,6 +50,7 @@ function VoxMindApp() {
   const { settings } = useSettings();
   const { sessions, addSession } = useSessions();
   const { streak, bump } = useStreak();
+  const { resume, setResume } = useResume();
 
   const [screen, setScreen] = useState<Screen>("home");
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -74,7 +75,7 @@ function VoxMindApp() {
       setQuestion("");
       try {
         let prompt = "";
-        if (mode === "technical") prompt = technicalQuestionPrompt(settings.difficulty, settings.domain);
+        if (mode === "technical") prompt = technicalQuestionPrompt(settings.difficulty, settings.domain, resume?.text);
         else if (mode === "extempore") prompt = extemporeTopicPrompt();
         else prompt = gdTopicPrompt();
         const q = await generateText(apiKey, prompt);
@@ -85,7 +86,7 @@ function VoxMindApp() {
         setQuestionLoading(false);
       }
     },
-    [apiKey, settings.difficulty, settings.domain]
+    [apiKey, settings.difficulty, settings.domain, resume?.text]
   );
 
   const startMode = useCallback(
