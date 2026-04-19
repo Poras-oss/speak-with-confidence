@@ -110,7 +110,7 @@ function VoxMindApp() {
       setFeedbackError(null);
       setFeedbackLoading(true);
       try {
-        const fb = await generateFeedback(apiKey, feedbackPrompt(question, t, activeMode || "extempore"));
+        const fb = await generateFeedback(apiKey, feedbackPrompt(question, t, activeMode || "extempore", activeMode === "technical" ? resume?.text : undefined));
         setFeedback(fb);
         bump();
         addSession({
@@ -128,7 +128,7 @@ function VoxMindApp() {
         setFeedbackLoading(false);
       }
     },
-    [apiKey, question, activeMode, addSession, bump]
+    [apiKey, question, activeMode, addSession, bump, resume?.text]
   );
 
   const retryFeedback = useCallback(async () => {
@@ -136,14 +136,14 @@ function VoxMindApp() {
     setFeedbackError(null);
     setFeedbackLoading(true);
     try {
-      const fb = await generateFeedback(apiKey, feedbackPrompt(question, transcript, activeMode));
+      const fb = await generateFeedback(apiKey, feedbackPrompt(question, transcript, activeMode, activeMode === "technical" ? resume?.text : undefined));
       setFeedback(fb);
     } catch {
       setFeedbackError("Still no luck. Check your network or API key.");
     } finally {
       setFeedbackLoading(false);
     }
-  }, [apiKey, question, transcript, activeMode]);
+  }, [apiKey, question, transcript, activeMode, resume?.text]);
 
   const tryAgain = useCallback(() => {
     setTranscript("");
@@ -192,6 +192,8 @@ function VoxMindApp() {
           onOpenHistory={() => setHistoryOpen(true)}
           streak={streak}
           totalSessions={sessions.length}
+          resume={resume}
+          onResumeChange={setResume}
         />
       )}
 
