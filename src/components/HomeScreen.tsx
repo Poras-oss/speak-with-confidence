@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { MODES, type ModeConfig, type ModeId } from "@/config/modes";
-import type { StreakState } from "@/hooks/useSessionStore";
+import type { ResumeState, StreakState } from "@/hooks/useSessionStore";
+import { ResumePanel } from "./ResumePanel";
 
 const MOTIVATIONS = [
   "Your ideas are worth saying out loud.",
@@ -17,9 +18,11 @@ interface Props {
   onOpenHistory: () => void;
   streak: StreakState;
   totalSessions: number;
+  resume: ResumeState | null;
+  onResumeChange: (r: ResumeState | null) => void;
 }
 
-export function HomeScreen({ onPick, onOpenSettings, onOpenHistory, streak, totalSessions }: Props) {
+export function HomeScreen({ onPick, onOpenSettings, onOpenHistory, streak, totalSessions, resume, onResumeChange }: Props) {
   const [motiv, setMotiv] = useState(MOTIVATIONS[0]);
   useEffect(() => {
     setMotiv(MOTIVATIONS[Math.floor(Math.random() * MOTIVATIONS.length)]);
@@ -71,6 +74,8 @@ export function HomeScreen({ onPick, onOpenSettings, onOpenHistory, streak, tota
             </div>
           ))}
         </div>
+
+        <ResumePanel resume={resume} onChange={onResumeChange} />
       </main>
 
       {/* Footer */}
