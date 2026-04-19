@@ -7,7 +7,7 @@ import { FeedbackScreen } from "@/components/FeedbackScreen";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { HistoryDrawer } from "@/components/HistoryDrawer";
 import { MODES, type ModeId } from "@/config/modes";
-import { useApiKey, useSettings, useSessions, useStreak } from "@/hooks/useSessionStore";
+import { useApiKey, useSettings, useSessions, useStreak, useResume } from "@/hooks/useSessionStore";
 import { generateText, generateFeedback, serverKeyAvailable, type FeedbackPayload } from "@/hooks/useNvidiaAI";
 import {
   technicalQuestionPrompt,
@@ -50,6 +50,7 @@ function VoxMindApp() {
   const { settings } = useSettings();
   const { sessions, addSession } = useSessions();
   const { streak, bump } = useStreak();
+  const { resume, setResume } = useResume();
 
   const [screen, setScreen] = useState<Screen>("home");
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -74,7 +75,7 @@ function VoxMindApp() {
       setQuestion("");
       try {
         let prompt = "";
-        if (mode === "technical") prompt = technicalQuestionPrompt(settings.difficulty, settings.domain);
+        if (mode === "technical") prompt = technicalQuestionPrompt(settings.difficulty, settings.domain, resume?.text);
         else if (mode === "extempore") prompt = extemporeTopicPrompt();
         else prompt = gdTopicPrompt();
         const q = await generateText(apiKey, prompt);
@@ -85,7 +86,7 @@ function VoxMindApp() {
         setQuestionLoading(false);
       }
     },
-    [apiKey, settings.difficulty, settings.domain]
+    [apiKey, settings.difficulty, settings.domain, resume?.text]
   );
 
   const startMode = useCallback(
@@ -109,7 +110,7 @@ function VoxMindApp() {
       setFeedbackError(null);
       setFeedbackLoading(true);
       try {
-        const fb = await generateFeedback(apiKey, feedbackPrompt(question, t, activeMode || "extempore"));
+        const fb = await generateFeedback(apiKey, feedbackPrompt(question, t, activeMode || "extempore", activeMode === "technical" ? resume?.text : undefined));
         setFeedback(fb);
         bump();
         addSession({
@@ -127,7 +128,7 @@ function VoxMindApp() {
         setFeedbackLoading(false);
       }
     },
-    [apiKey, question, activeMode, addSession, bump]
+    [apiKey, question, activeMode, addSession, bump, resume?.text]
   );
 
   const retryFeedback = useCallback(async () => {
@@ -135,14 +136,14 @@ function VoxMindApp() {
     setFeedbackError(null);
     setFeedbackLoading(true);
     try {
-      const fb = await generateFeedback(apiKey, feedbackPrompt(question, transcript, activeMode));
+      const fb = await generateFeedback(apiKey, feedbackPrompt(question, transcript, activeMode, activeMode === "technical" ? resume?.text : undefined));
       setFeedback(fb);
     } catch {
       setFeedbackError("Still no luck. Check your network or API key.");
     } finally {
       setFeedbackLoading(false);
     }
-  }, [apiKey, question, transcript, activeMode]);
+  }, [apiKey, question, transcript, activeMode, resume?.text]);
 
   const tryAgain = useCallback(() => {
     setTranscript("");
@@ -191,6 +192,8 @@ function VoxMindApp() {
           onOpenHistory={() => setHistoryOpen(true)}
           streak={streak}
           totalSessions={sessions.length}
+          resume={resume}
+          onResumeChange={setResume}
         />
       )}
 

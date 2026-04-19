@@ -7,7 +7,14 @@ const KEYS = {
   settings: "voxmind:settings",
   sessions: "voxmind:sessions",
   streak: "voxmind:streak",
+  resume: "voxmind:resume",
 } as const;
+
+export interface ResumeState {
+  text: string;
+  fileName: string;
+  updatedAt: number;
+}
 
 export interface Settings {
   difficulty: Difficulty;
@@ -134,4 +141,19 @@ export function useStreak() {
     });
   }, []);
   return { streak, bump };
+}
+
+export function useResume() {
+  const [resume, setResumeState] = useState<ResumeState | null>(null);
+  useEffect(() => {
+    setResumeState(read<ResumeState | null>(KEYS.resume, null));
+  }, []);
+  const setResume = useCallback((r: ResumeState | null) => {
+    setResumeState(r);
+    if (typeof window !== "undefined") {
+      if (r) localStorage.setItem(KEYS.resume, JSON.stringify(r));
+      else localStorage.removeItem(KEYS.resume);
+    }
+  }, []);
+  return { resume, setResume };
 }
