@@ -7,7 +7,7 @@ import { FeedbackScreen } from "@/components/FeedbackScreen";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { HistoryDrawer } from "@/components/HistoryDrawer";
 import { MODES, type ModeId } from "@/config/modes";
-import { useApiKey, useSettings, useSessions, useStreak } from "@/hooks/useSessionStore";
+import { useApiKey, useSettings, useSessions, useStreak, useResume } from "@/hooks/useSessionStore";
 import { generateText, generateFeedback, serverKeyAvailable, type FeedbackPayload } from "@/hooks/useNvidiaAI";
 import {
   technicalQuestionPrompt,
