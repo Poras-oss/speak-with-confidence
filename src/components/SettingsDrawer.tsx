@@ -17,8 +17,8 @@ export function SettingsDrawer({ open, onClose }: Props) {
 
   const test = async () => {
     setTesting("loading");
-    const ok = await testApiKey(draftKey || apiKey);
-    setTesting(ok ? "ok" : "fail");
+    const result = await testApiKey(draftKey || apiKey);
+    setTesting(result.ok ? "ok" : "fail");
   };
 
   const save = () => {

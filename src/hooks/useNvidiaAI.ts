@@ -50,12 +50,13 @@ export async function generateFeedback(apiKey: string, prompt: string): Promise<
   return normalizeFeedback(json);
 }
 
-export async function testApiKey(apiKey: string): Promise<boolean> {
+export async function testApiKey(apiKey: string): Promise<{ ok: boolean; error?: string }> {
   try {
-    const out = await chat(apiKey, "Reply with the single word: ok", { temperature: 0, max_tokens: 5 });
-    return /ok/i.test(out);
-  } catch {
-    return false;
+    const out = await chat(apiKey, "Say hi", { temperature: 0, max_tokens: 10 });
+    if (out && out.length > 0) return { ok: true };
+    return { ok: false, error: "Empty response from NVIDIA API." };
+  } catch (e: any) {
+    return { ok: false, error: e?.message || "Request failed (network or CORS)." };
   }
 }
 

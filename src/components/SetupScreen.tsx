@@ -14,13 +14,13 @@ export function SetupScreen({ onSaved }: Props) {
     if (!key.trim()) return;
     setStatus("testing");
     setErrMsg("");
-    const ok = await testApiKey(key.trim());
-    if (ok) {
+    const result = await testApiKey(key.trim());
+    if (result.ok) {
       setStatus("ok");
       setTimeout(() => onSaved(key.trim()), 500);
     } else {
       setStatus("fail");
-      setErrMsg("That key didn't work. Double-check and try again.");
+      setErrMsg(result.error || "That key didn't work. Double-check and try again.");
     }
   };
 
