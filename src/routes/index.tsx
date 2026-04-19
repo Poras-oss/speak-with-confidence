@@ -8,7 +8,7 @@ import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { HistoryDrawer } from "@/components/HistoryDrawer";
 import { MODES, type ModeId } from "@/config/modes";
 import { useApiKey, useSettings, useSessions, useStreak } from "@/hooks/useSessionStore";
-import { generateText, generateFeedback, type FeedbackPayload } from "@/hooks/useNvidiaAI";
+import { generateText, generateFeedback, serverKeyAvailable, type FeedbackPayload } from "@/hooks/useNvidiaAI";
 import {
   technicalQuestionPrompt,
   extemporeTopicPrompt,
@@ -40,7 +40,11 @@ type Screen = "home" | "session" | "feedback";
 
 function VoxMindApp() {
   const [hydrated, setHydrated] = useState(false);
-  useEffect(() => setHydrated(true), []);
+  const [serverHasKey, setServerHasKey] = useState<boolean | null>(null);
+  useEffect(() => {
+    setHydrated(true);
+    serverKeyAvailable().then(setServerHasKey).catch(() => setServerHasKey(false));
+  }, []);
 
   const { apiKey, setApiKey } = useApiKey();
   const { settings } = useSettings();
@@ -65,7 +69,6 @@ function VoxMindApp() {
 
   const fetchQuestion = useCallback(
     async (mode: ModeId) => {
-      if (!apiKey) return;
       setQuestionLoading(true);
       setQuestionError(null);
       setQuestion("");
@@ -168,11 +171,12 @@ function VoxMindApp() {
     setActiveMode(null);
   }, []);
 
-  if (!hydrated) {
+  if (!hydrated || serverHasKey === null) {
     return <div className="min-h-screen bg-canvas" />;
   }
 
-  if (!apiKey) {
+  // Only show setup if neither the server env key nor a user-saved key is available.
+  if (!serverHasKey && !apiKey) {
     return <SetupScreen onSaved={(k) => setApiKey(k)} />;
   }
 
