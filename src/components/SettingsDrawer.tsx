@@ -15,11 +15,20 @@ export function SettingsDrawer({ open, onClose }: Props) {
   const { sessions, clearSessions } = useSessions();
   const [draftKey, setDraftKey] = useState(apiKey);
   const [testing, setTesting] = useState<"idle" | "ok" | "fail" | "loading">("idle");
+  const [whisperLoad, setWhisperLoad] = useState<WhisperLoadProgress>({ status: "idle", progress: 0, message: "" });
 
   const test = async () => {
     setTesting("loading");
     const result = await testApiKey(draftKey || apiKey);
     setTesting(result.ok ? "ok" : "fail");
+  };
+
+  const downloadWhisper = async () => {
+    try {
+      await loadWhisper(settings.whisperModel, setWhisperLoad);
+    } catch (e: any) {
+      setWhisperLoad({ status: "error", progress: 0, message: e?.message || "Failed" });
+    }
   };
 
   const save = () => {
