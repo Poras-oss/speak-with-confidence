@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { DOMAINS, DURATIONS, type Domain, type Difficulty } from "@/config/modes";
-import { useApiKey, useSettings, useSessions } from "@/hooks/useSessionStore";
+import { useApiKey, useSettings, useSessions, type WhisperModelId } from "@/hooks/useSessionStore";
 import { testApiKey } from "@/hooks/useNvidiaAI";
+import { loadWhisper, type WhisperLoadProgress } from "@/hooks/useWhisperSTT";
 
 interface Props {
   open: boolean;
@@ -14,11 +15,20 @@ export function SettingsDrawer({ open, onClose }: Props) {
   const { sessions, clearSessions } = useSessions();
   const [draftKey, setDraftKey] = useState(apiKey);
   const [testing, setTesting] = useState<"idle" | "ok" | "fail" | "loading">("idle");
+  const [whisperLoad, setWhisperLoad] = useState<WhisperLoadProgress>({ status: "idle", progress: 0, message: "" });
 
   const test = async () => {
     setTesting("loading");
     const result = await testApiKey(draftKey || apiKey);
     setTesting(result.ok ? "ok" : "fail");
+  };
+
+  const downloadWhisper = async () => {
+    try {
+      await loadWhisper(settings.whisperModel, setWhisperLoad);
+    } catch (e: any) {
+      setWhisperLoad({ status: "error", progress: 0, message: e?.message || "Failed" });
+    }
   };
 
   const save = () => {
@@ -87,6 +97,52 @@ export function SettingsDrawer({ open, onClose }: Props) {
                 <option key={d} value={d}>{d}</option>
               ))}
             </select>
+          </Section>
+
+          <Section title="Speech recognition engine">
+            <Segmented
+              value={settings.sttEngine}
+              options={["browser", "whisper"]}
+              labels={["Browser (fast)", "Whisper (accurate)"]}
+              onChange={(v) => setSettings({ sttEngine: v as "browser" | "whisper" })}
+            />
+            {settings.sttEngine === "whisper" && (
+              <div className="mt-3 space-y-2">
+                <div className="text-xs text-warm-muted">
+                  Runs locally in your browser via WebAssembly. First use downloads the model and caches it offline.
+                </div>
+                <Segmented
+                  value={settings.whisperModel}
+                  options={["tiny", "base"]}
+                  labels={["Tiny · ~40MB", "Base · ~80MB"]}
+                  onChange={(v) => {
+                    setSettings({ whisperModel: v as WhisperModelId });
+                    setWhisperLoad({ status: "idle", progress: 0, message: "" });
+                  }}
+                />
+                <button
+                  onClick={downloadWhisper}
+                  disabled={whisperLoad.status === "downloading"}
+                  className="w-full bg-secondary text-warm rounded-lg py-2 text-sm hover:bg-accent transition disabled:opacity-50"
+                >
+                  {whisperLoad.status === "ready"
+                    ? "✓ Model downloaded & cached"
+                    : whisperLoad.status === "downloading"
+                    ? `Downloading… ${Math.round((whisperLoad.progress || 0) * 100)}%`
+                    : whisperLoad.status === "error"
+                    ? `Retry (${whisperLoad.message})`
+                    : "Download model now"}
+                </button>
+                {whisperLoad.status === "downloading" && (
+                  <div className="h-1 bg-input rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary transition-all"
+                      style={{ width: `${Math.round((whisperLoad.progress || 0) * 100)}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </Section>
 
           <Section title="Session length">
