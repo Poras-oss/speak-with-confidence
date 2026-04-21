@@ -16,7 +16,7 @@ import {
   feedbackPrompt,
 } from "@/config/prompts";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/app")({
   head: () => ({
     meta: [
       { title: "VoxMind — Public Speaking Trainer" },
