@@ -235,23 +235,47 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
     // Pick a supported mime
     const mimeCandidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg"];
     const mime = mimeCandidates.find((m) => (window as any).MediaRecorder?.isTypeSupported?.(m)) || "";
-    const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
-    recRef.current = rec;
 
-    rec.ondataavailable = (e) => {
-      if (e.data && e.data.size > 0) {
-        chunkQueueRef.current.push(e.data);
-        processQueue();
-      }
+    // We restart the recorder every CHUNK_MS so each emitted Blob is a
+    // complete, self-contained media file (with headers) that decodeAudioData
+    // can parse. Using rec.start(timeslice) emits headerless fragments after
+    // the first chunk, which fail to decode silently.
+    const CHUNK_MS = 4000;
+    let segmentChunks: Blob[] = [];
+    let cycleTimer: number | null = null;
+
+    const startRecorderCycle = () => {
+      if (stoppedRef.current) return;
+      const r = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+      recRef.current = r;
+      segmentChunks = [];
+      r.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) segmentChunks.push(e.data);
+      };
+      r.onerror = (e: any) =>
+        setError("Recorder error: " + (e?.error?.message || "unknown"));
+      r.onstop = () => {
+        if (segmentChunks.length > 0) {
+          const blob = new Blob(segmentChunks, {
+            type: mime || segmentChunks[0].type || "audio/webm",
+          });
+          chunkQueueRef.current.push(blob);
+          processQueue();
+        }
+        if (!stoppedRef.current) startRecorderCycle();
+      };
+      r.start();
+      cycleTimer = window.setTimeout(() => {
+        try { r.state === "recording" && r.stop(); } catch {}
+      }, CHUNK_MS);
     };
-    rec.onerror = (e: any) => setError("Recorder error: " + (e?.error?.message || "unknown"));
-    rec.onstop = () => {
-      // Drain any remaining
-      processQueue();
-    };
-    // 4s chunks — balances latency vs. accuracy
-    rec.start(4000);
+
+    // Replace the single-recorder reference with our cycle
+    startRecorderCycle();
     setListening(true);
+
+    // Track timer so stop() can clear it
+    (recRef as any).cycleTimerGetter = () => cycleTimer;
   }, [supported, modelId, tickLevel, processQueue]);
 
   const reset = useCallback(() => setTranscript(""), []);
