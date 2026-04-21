@@ -235,8 +235,6 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
     // Pick a supported mime
     const mimeCandidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg"];
     const mime = mimeCandidates.find((m) => (window as any).MediaRecorder?.isTypeSupported?.(m)) || "";
-    const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
-    recRef.current = rec;
 
     // We restart the recorder every CHUNK_MS so each emitted Blob is a
     // complete, self-contained media file (with headers) that decodeAudioData
