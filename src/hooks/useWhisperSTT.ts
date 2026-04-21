@@ -36,8 +36,8 @@ export async function loadWhisper(
 
     const repo = MODEL_MAP[modelId];
     const p = await pipeline("automatic-speech-recognition", repo, {
-      // dtype/quantization keeps it small & fast in browser
-      dtype: "q8" as any,
+      // fp32 is the most compatible; q8 has broken scales for whisper decoder
+      dtype: "fp32" as any,
       device: "wasm" as any,
       progress_callback: (info: any) => {
         if (info?.status === "progress") {
