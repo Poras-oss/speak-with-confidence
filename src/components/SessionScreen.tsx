@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useTranscriber } from "@/hooks/useTranscriber";
 import { TranscriptionDisplay } from "./TranscriptionDisplay";
 import { MicLevelMeter } from "./MicLevelMeter";
 import type { ModeConfig } from "@/config/modes";
@@ -29,7 +29,7 @@ export function SessionScreen({
   onSkip,
   onExit,
 }: Props) {
-  const sr = useSpeechRecognition();
+  const sr = useTranscriber();
   const [elapsed, setElapsed] = useState(0);
   const [started, setStarted] = useState(false);
   const finishedRef = useRef(false);
