@@ -1,6 +1,9 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { ClerkProvider } from "@clerk/clerk-react";
 
 import appCss from "../styles.css?url";
+
+const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
 
 function NotFoundComponent() {
   return (
@@ -66,5 +69,16 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  return <Outlet />;
+  // If no Clerk key is configured, render the app without auth (graceful fallback).
+  if (!CLERK_PUBLISHABLE_KEY || CLERK_PUBLISHABLE_KEY.includes("REPLACE_ME")) {
+    if (typeof window !== "undefined") {
+      console.warn("[Clerk] VITE_CLERK_PUBLISHABLE_KEY is not set. Auth UI is disabled.");
+    }
+    return <Outlet />;
+  }
+  return (
+    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} afterSignOutUrl="/">
+      <Outlet />
+    </ClerkProvider>
+  );
 }
