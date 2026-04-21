@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { MODES, type ModeConfig, type ModeId } from "@/config/modes";
 import type { ResumeState, StreakState } from "@/hooks/useSessionStore";
 import { ResumePanel } from "./ResumePanel";
+import { AuthButton } from "./AuthButton";
 
 const MOTIVATIONS = [
   "Your ideas are worth saying out loud.",
@@ -46,6 +47,7 @@ export function HomeScreen({ onPick, onOpenSettings, onOpenHistory, streak, tota
           >
             Settings
           </button>
+          <AuthButton />
         </div>
       </header>
 
