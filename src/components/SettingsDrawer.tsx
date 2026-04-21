@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { DOMAINS, DURATIONS, type Domain, type Difficulty } from "@/config/modes";
-import { useApiKey, useSettings, useSessions } from "@/hooks/useSessionStore";
+import { useApiKey, useSettings, useSessions, type WhisperModelId } from "@/hooks/useSessionStore";
 import { testApiKey } from "@/hooks/useNvidiaAI";
+import { loadWhisper, type WhisperLoadProgress } from "@/hooks/useWhisperSTT";
 
 interface Props {
   open: boolean;

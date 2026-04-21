@@ -101,7 +101,11 @@ export function SessionScreen({
               style={{ background: "var(--color-listening)" }}
             />
             <span className="text-[10px] uppercase tracking-widest text-warm-muted">
-              {sr.listening ? "Listening" : "Idle"}
+              {sr.engine === "whisper" && sr.loadStatus?.status === "downloading"
+                ? `Whisper · ${Math.round((sr.loadStatus.progress || 0) * 100)}%`
+                : sr.listening
+                ? `Listening · ${sr.engine === "whisper" ? "Whisper" : "Browser"}`
+                : "Idle"}
             </span>
           </div>
         </div>
