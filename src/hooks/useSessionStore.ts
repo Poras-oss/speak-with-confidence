@@ -16,6 +16,9 @@ export interface ResumeState {
   updatedAt: number;
 }
 
+export type STTEngine = "browser" | "whisper";
+export type WhisperModelId = "tiny" | "base";
+
 export interface Settings {
   difficulty: Difficulty;
   domain: Domain;
@@ -23,6 +26,8 @@ export interface Settings {
   autoAdvance: boolean;
   showFillers: boolean;
   revealIdeal: boolean;
+  sttEngine: STTEngine;
+  whisperModel: WhisperModelId;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -32,6 +37,8 @@ export const DEFAULT_SETTINGS: Settings = {
   autoAdvance: false,
   showFillers: true,
   revealIdeal: true,
+  sttEngine: "browser",
+  whisperModel: "tiny",
 };
 
 export interface SessionRecord {
