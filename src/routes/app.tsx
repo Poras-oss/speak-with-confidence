@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { SetupScreen } from "@/components/SetupScreen";
 import { HomeScreen } from "@/components/HomeScreen";
 import { SessionScreen } from "@/components/SessionScreen";
 import { FeedbackScreen } from "@/components/FeedbackScreen";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { HistoryDrawer } from "@/components/HistoryDrawer";
 import { MODES, type ModeId } from "@/config/modes";
-import { useApiKey, useSettings, useSessions, useStreak, useResume } from "@/hooks/useSessionStore";
-import { generateText, generateFeedback, serverKeyAvailable, type FeedbackPayload } from "@/hooks/useNvidiaAI";
+import { useSettings, useSessions, useStreak, useResume } from "@/hooks/useSessionStore";
+import { generateText, generateFeedback, type FeedbackPayload } from "@/hooks/useNvidiaAI";
 import {
   technicalQuestionPrompt,
   extemporeTopicPrompt,
@@ -40,13 +39,10 @@ type Screen = "home" | "session" | "feedback";
 
 function VoxMindApp() {
   const [hydrated, setHydrated] = useState(false);
-  const [serverHasKey, setServerHasKey] = useState<boolean | null>(null);
   useEffect(() => {
     setHydrated(true);
-    serverKeyAvailable().then(setServerHasKey).catch(() => setServerHasKey(false));
   }, []);
 
-  const { apiKey, setApiKey } = useApiKey();
   const { settings } = useSettings();
   const { sessions, addSession } = useSessions();
   const { streak, bump } = useStreak();
@@ -78,15 +74,15 @@ function VoxMindApp() {
         if (mode === "technical") prompt = technicalQuestionPrompt(settings.difficulty, settings.domain, resume?.text);
         else if (mode === "extempore") prompt = extemporeTopicPrompt();
         else prompt = gdTopicPrompt();
-        const q = await generateText(apiKey, prompt);
+        const q = await generateText("", prompt);
         setQuestion(q);
       } catch (e: any) {
-        setQuestionError("Couldn't fetch a question. Check your API key or try again.");
+        setQuestionError("Couldn't fetch a question. Try again.");
       } finally {
         setQuestionLoading(false);
       }
     },
-    [apiKey, settings.difficulty, settings.domain, resume?.text]
+    [settings.difficulty, settings.domain, resume?.text]
   );
 
   const startMode = useCallback(
@@ -110,7 +106,7 @@ function VoxMindApp() {
       setFeedbackError(null);
       setFeedbackLoading(true);
       try {
-        const fb = await generateFeedback(apiKey, feedbackPrompt(question, t, activeMode || "extempore", activeMode === "technical" ? resume?.text : undefined));
+        const fb = await generateFeedback("", feedbackPrompt(question, t, activeMode || "extempore", activeMode === "technical" ? resume?.text : undefined));
         setFeedback(fb);
         bump();
         addSession({
@@ -123,12 +119,12 @@ function VoxMindApp() {
           feedback: fb,
         });
       } catch (e: any) {
-        setFeedbackError("We couldn't generate feedback this time. The session is still saved in spirit — try again.");
+        setFeedbackError("We couldn't generate feedback this time. Try again.");
       } finally {
         setFeedbackLoading(false);
       }
     },
-    [apiKey, question, activeMode, addSession, bump, resume?.text]
+    [question, activeMode, addSession, bump, resume?.text]
   );
 
   const retryFeedback = useCallback(async () => {
@@ -136,14 +132,14 @@ function VoxMindApp() {
     setFeedbackError(null);
     setFeedbackLoading(true);
     try {
-      const fb = await generateFeedback(apiKey, feedbackPrompt(question, transcript, activeMode, activeMode === "technical" ? resume?.text : undefined));
+      const fb = await generateFeedback("", feedbackPrompt(question, transcript, activeMode, activeMode === "technical" ? resume?.text : undefined));
       setFeedback(fb);
     } catch {
-      setFeedbackError("Still no luck. Check your network or API key.");
+      setFeedbackError("Still no luck. Check your network or try again.");
     } finally {
       setFeedbackLoading(false);
     }
-  }, [apiKey, question, transcript, activeMode, resume?.text]);
+  }, [question, transcript, activeMode, resume?.text]);
 
   const tryAgain = useCallback(() => {
     setTranscript("");
@@ -172,13 +168,8 @@ function VoxMindApp() {
     setActiveMode(null);
   }, []);
 
-  if (!hydrated || serverHasKey === null) {
+  if (!hydrated) {
     return <div className="min-h-screen bg-canvas" />;
-  }
-
-  // Only show setup if neither the server env key nor a user-saved key is available.
-  if (!serverHasKey && !apiKey) {
-    return <SetupScreen onSaved={(k) => setApiKey(k)} />;
   }
 
   const modeCfg = activeMode ? MODES.find((m) => m.id === activeMode)! : null;

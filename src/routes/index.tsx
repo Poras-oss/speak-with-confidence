@@ -235,7 +235,7 @@ function FounderStory() {
           <p>
             So I built VoxMind. For me. And for everyone who knows exactly what that spiral feels like.
           </p>
-          <p className="text-sm text-[#a0a0a0] pt-2">— Poras, founder of VoxMind</p>
+          <p className="text-sm text-[#a0a0a0] pt-2">— Developer of VoxMind</p>
         </div>
       </div>
     </section>

@@ -3,6 +3,8 @@
 // model (~40-80MB) and caches it in the browser via the Cache API.
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { WhisperModelId } from "./useSessionStore";
+import { MicVAD } from "@ricky0123/vad-web";
+import { useWebLLM } from "./useWebLLM";
 
 type Pipeline = any;
 
@@ -12,6 +14,7 @@ let loadingPromise: Promise<Pipeline> | null = null;
 const MODEL_MAP: Record<WhisperModelId, string> = {
   tiny: "Xenova/whisper-tiny.en",
   base: "Xenova/whisper-base.en",
+  "distil-small": "distil-whisper/distil-small.en",
 };
 
 export interface WhisperLoadProgress {
@@ -35,10 +38,24 @@ export async function loadWhisper(
     env.allowRemoteModels = true;
 
     const repo = MODEL_MAP[modelId];
+
+    let device: any = "wasm";
+    let dtype: any = "fp32";
+    if (navigator.gpu) {
+      try {
+        const adapter = await navigator.gpu.requestAdapter();
+        if (adapter) {
+          device = "webgpu";
+          dtype = "fp16";
+        }
+      } catch (e) {
+        console.warn("WebGPU not available, falling back to WASM");
+      }
+    }
+
     const p = await pipeline("automatic-speech-recognition", repo, {
-      // fp32 is the most compatible; q8 has broken scales for whisper decoder
-      dtype: "fp32" as any,
-      device: "wasm" as any,
+      dtype,
+      device,
       progress_callback: (info: any) => {
         if (info?.status === "progress") {
           onProgress?.({
@@ -61,45 +78,6 @@ export async function loadWhisper(
   return loadingPromise;
 }
 
-// Decode a Blob (any browser-supported audio container) to mono Float32 @ 16kHz
-async function decodeToMono16k(blob: Blob): Promise<Float32Array> {
-  const arrayBuf = await blob.arrayBuffer();
-  const AC = (window.AudioContext || (window as any).webkitAudioContext);
-  // Use 16k sample rate context where supported, otherwise resample manually.
-  let ctx: AudioContext;
-  try {
-    ctx = new AC({ sampleRate: 16000 });
-  } catch {
-    ctx = new AC();
-  }
-  const decoded = await ctx.decodeAudioData(arrayBuf.slice(0));
-  let mono: Float32Array;
-  if (decoded.numberOfChannels === 1) {
-    mono = decoded.getChannelData(0);
-  } else {
-    const l = decoded.getChannelData(0);
-    const r = decoded.getChannelData(1);
-    mono = new Float32Array(l.length);
-    for (let i = 0; i < l.length; i++) mono[i] = (l[i] + r[i]) / 2;
-  }
-  // Resample if context didn't honor 16kHz
-  if (decoded.sampleRate !== 16000) {
-    const ratio = decoded.sampleRate / 16000;
-    const outLen = Math.floor(mono.length / ratio);
-    const out = new Float32Array(outLen);
-    for (let i = 0; i < outLen; i++) {
-      const src = i * ratio;
-      const i0 = Math.floor(src);
-      const i1 = Math.min(mono.length - 1, i0 + 1);
-      const frac = src - i0;
-      out[i] = mono[i0] * (1 - frac) + mono[i1] * frac;
-    }
-    mono = out;
-  }
-  ctx.close().catch(() => {});
-  return mono;
-}
-
 export interface UseWhisperResult {
   supported: boolean;
   listening: boolean;
@@ -115,6 +93,7 @@ export interface UseWhisperResult {
 }
 
 export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
+  const llm = useWebLLM();
   const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -125,12 +104,12 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
     message: cachedPipeline?.id === modelId ? "Ready" : "",
   });
 
-  const recRef = useRef<MediaRecorder | null>(null);
+  const vadRef = useRef<any>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const rafRef = useRef<number | null>(null);
-  const chunkQueueRef = useRef<Blob[]>([]);
+  const chunkQueueRef = useRef<Float32Array[]>([]);
   const processingRef = useRef(false);
   const stoppedRef = useRef(false);
 
@@ -157,13 +136,17 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
       const pipe = cachedPipeline?.p;
       if (!pipe) return;
       while (chunkQueueRef.current.length > 0) {
-        const blob = chunkQueueRef.current.shift()!;
+        const audio = chunkQueueRef.current.shift()!;
         try {
-          const audio = await decodeToMono16k(blob);
           if (audio.length < 16000 * 0.3) continue; // <0.3s, skip silence
           const out: any = await pipe(audio, { language: "english", task: "transcribe" });
-          const text = (out?.text || "").trim();
-          if (text) setTranscript((prev) => (prev ? prev + " " + text : text));
+          let text = (out?.text || "").trim();
+          if (text) {
+             if (llm.isReady) {
+               text = await llm.fixTranscript(text);
+             }
+             setTranscript((prev) => (prev ? prev + " " + text : text));
+          }
         } catch (e) {
           // swallow per-chunk errors
         }
@@ -184,8 +167,8 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
 
   const stop = useCallback(() => {
     stoppedRef.current = true;
-    try { recRef.current?.stop(); } catch {}
-    recRef.current = null;
+    try { vadRef.current?.pause(); } catch {}
+    vadRef.current = null;
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = null;
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -208,6 +191,11 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
 
     try {
       await loadWhisper(modelId, setLoadStatus);
+      if (!llm.isReady) {
+        setLoadStatus({ status: "downloading", progress: 0.5, message: "Loading WebLLM..." });
+        await llm.load();
+        setLoadStatus({ status: "ready", progress: 1, message: "Ready" });
+      }
     } catch (e: any) {
       setError("Whisper model failed to load: " + (e?.message || "unknown error"));
       return;
@@ -215,7 +203,14 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
 
     let stream: MediaStream;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          channelCount: 1,
+          echoCancellation: true,
+          autoGainControl: true,
+          noiseSuppression: true,
+        },
+      });
     } catch {
       setError("Microphone access was blocked. Allow it in your browser to begin.");
       return;
@@ -232,50 +227,19 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
     analyserRef.current = analyser;
     rafRef.current = requestAnimationFrame(tickLevel);
 
-    // Pick a supported mime
-    const mimeCandidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg"];
-    const mime = mimeCandidates.find((m) => (window as any).MediaRecorder?.isTypeSupported?.(m)) || "";
-
-    // We restart the recorder every CHUNK_MS so each emitted Blob is a
-    // complete, self-contained media file (with headers) that decodeAudioData
-    // can parse. Using rec.start(timeslice) emits headerless fragments after
-    // the first chunk, which fail to decode silently.
-    const CHUNK_MS = 4000;
-    let segmentChunks: Blob[] = [];
-    let cycleTimer: number | null = null;
-
-    const startRecorderCycle = () => {
-      if (stoppedRef.current) return;
-      const r = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
-      recRef.current = r;
-      segmentChunks = [];
-      r.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) segmentChunks.push(e.data);
-      };
-      r.onerror = (e: any) =>
-        setError("Recorder error: " + (e?.error?.message || "unknown"));
-      r.onstop = () => {
-        if (segmentChunks.length > 0) {
-          const blob = new Blob(segmentChunks, {
-            type: mime || segmentChunks[0].type || "audio/webm",
-          });
-          chunkQueueRef.current.push(blob);
+    try {
+      vadRef.current = await MicVAD.start({
+        stream,
+        onSpeechEnd: (audio: Float32Array) => {
+          if (stoppedRef.current) return;
+          chunkQueueRef.current.push(audio);
           processQueue();
-        }
-        if (!stoppedRef.current) startRecorderCycle();
-      };
-      r.start();
-      cycleTimer = window.setTimeout(() => {
-        try { r.state === "recording" && r.stop(); } catch {}
-      }, CHUNK_MS);
-    };
-
-    // Replace the single-recorder reference with our cycle
-    startRecorderCycle();
-    setListening(true);
-
-    // Track timer so stop() can clear it
-    (recRef as any).cycleTimerGetter = () => cycleTimer;
+        },
+      });
+      setListening(true);
+    } catch (e: any) {
+      setError("VAD initialization failed: " + (e?.message || "unknown error"));
+    }
   }, [supported, modelId, tickLevel, processQueue]);
 
   const reset = useCallback(() => setTranscript(""), []);
