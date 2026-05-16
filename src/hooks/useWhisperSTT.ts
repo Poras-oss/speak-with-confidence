@@ -12,7 +12,7 @@ let cachedPipeline: { id: WhisperModelId; p: Pipeline } | null = null;
 let loadingPromise: Promise<Pipeline> | null = null;
 
 const MODEL_MAP: Record<WhisperModelId, string> = {
-  tiny: "Xenova/whisper-tiny.en",
+  tiny: "Xenova/whisper-base.en",
   base: "Xenova/whisper-base.en",
   "distil-small": "Xenova/whisper-base.en", // distil-small has ONNX compat issues; base is similar size and reliable
 };
@@ -114,6 +114,8 @@ export interface UseWhisperResult {
 
 export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
   const llm = useWebLLM();
+  const llmRef = useRef(llm);
+  useEffect(() => { llmRef.current = llm; }, [llm]);
   const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -161,17 +163,21 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
       while (chunkQueueRef.current.length > 0) {
         const audio = chunkQueueRef.current.shift()!;
         try {
-          if (audio.length < 16000 * 0.15) {
+          if (audio.length < 16000 * 0.8) {
             console.log("[Whisper] Chunk too short, skipping:", audio.length, "samples");
             continue;
           }
           console.log("[Whisper] Transcribing chunk:", audio.length, "samples (~" + (audio.length / 16000).toFixed(1) + "s)");
-          const out: any = await pipe(audio);
+          const out: any = await pipe(audio, {
+            sampling_rate: 16000,
+            language: "english",
+            task: "transcribe",
+          });
           let text = (out?.text || "").trim();
           console.log("[Whisper] Result:", JSON.stringify(text));
           if (text) {
-             if (llm.isReady) {
-               text = await llm.fixTranscript(text);
+             if (llmRef.current.isReady) {
+               text = await llmRef.current.fixTranscript(text);
              }
              setTranscript((prev) => (prev ? prev + " " + text : text));
           }
@@ -181,6 +187,9 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
       }
     } finally {
       processingRef.current = false;
+      if (chunkQueueRef.current.length > 0) {
+        processQueue();
+      }
     }
   }, []);
 

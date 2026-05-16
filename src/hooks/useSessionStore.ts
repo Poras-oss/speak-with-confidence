@@ -16,7 +16,7 @@ export interface ResumeState {
   updatedAt: number;
 }
 
-export type STTEngine = "browser" | "whisper";
+export type STTEngine = "groq" | "whisper" | "browser";
 export type WhisperModelId = "tiny" | "base" | "distil-small";
 
 export interface Settings {
@@ -37,8 +37,8 @@ export const DEFAULT_SETTINGS: Settings = {
   autoAdvance: false,
   showFillers: true,
   revealIdeal: true,
-  sttEngine: "whisper",
-  whisperModel: "tiny",
+  sttEngine: "groq",
+  whisperModel: "base",
 };
 
 export interface SessionRecord {

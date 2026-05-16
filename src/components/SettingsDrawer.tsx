@@ -102,10 +102,15 @@ export function SettingsDrawer({ open, onClose }: Props) {
           <Section title="Speech recognition engine">
             <Segmented
               value={settings.sttEngine}
-              options={["browser", "whisper"]}
-              labels={["Browser (fast)", "Whisper (accurate)"]}
-              onChange={(v) => setSettings({ sttEngine: v as "browser" | "whisper" })}
+              options={["groq", "whisper", "browser"]}
+              labels={["Groq Whisper (cloud)", "Local Whisper (offline)", "Browser (native)"]}
+              onChange={(v) => setSettings({ sttEngine: v as "groq" | "whisper" | "browser" })}
             />
+            {settings.sttEngine === "groq" && (
+              <div className="mt-3 text-xs text-warm-muted">
+                Uses Groq's cloud Whisper API (whisper-large-v3-turbo) for lightning-fast, highly accurate transcription.
+              </div>
+            )}
             {settings.sttEngine === "whisper" && (
               <div className="mt-3 space-y-2">
                 <div className="text-xs text-warm-muted">
@@ -141,6 +146,11 @@ export function SettingsDrawer({ open, onClose }: Props) {
                     />
                   </div>
                 )}
+              </div>
+            )}
+            {settings.sttEngine === "browser" && (
+              <div className="mt-3 text-xs text-warm-muted">
+                Uses your browser's built-in speech recognition API. Fast but depends on browser support (best in Chrome/Edge).
               </div>
             )}
           </Section>
