@@ -140,6 +140,7 @@ function Hero() {
       <Waveform />
 
       <div className="relative max-w-5xl mx-auto px-6 md:px-10 pt-24 pb-32 md:pt-36 md:pb-44 text-center">
+        <h1 className="sr-only">VoxMind - AI Public Speaking Coach for Presentation Anxiety and Glossophobia</h1>
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.02] text-xs text-[#a0a0a0] mb-8 animate-fade-in">
           <span className="w-1.5 h-1.5 rounded-full bg-[#7C3AED] animate-pulse-soft" />
           Your voice is a muscle. Train it.
@@ -247,28 +248,28 @@ function Problem() {
   const cards = [
     {
       icon: "↻",
-      title: "The Spiral",
+      title: "The Anxiety Spiral (Glossophobia)",
       body:
-        "You go blank → feel awkward → go more blank. The anxiety feeds itself. You avoid speaking. That makes it worse.",
+        "You go blank → feel awkward → go more blank. Glossophobia feeds itself through avoidance. You avoid speaking, which only makes the fear stronger.",
     },
     {
       icon: "🎙",
       title: "No Safe Space to Practice",
       body:
-        "Practicing in real meetings or interviews is high-stakes. You need a low-pressure space to make mistakes and learn from them.",
+        "Practicing in real meetings or interviews is high-stakes. You need a low-pressure, private space to make mistakes, run exposure exercises, and learn from them.",
     },
     {
       icon: "💬",
-      title: "Feedback is Everything",
+      title: "Objective Feedback is Everything",
       body:
-        "Toastmasters is great — but it's once a week. You need reps. Daily, private, honest reps with real feedback.",
+        "Toastmasters is great — but it's once a week. You need deliberate practice. Daily, private reps with AI-driven, objective feedback on your clarity and structure.",
     },
   ];
   return (
     <section className="py-24 md:py-32">
       <div className="max-w-6xl mx-auto px-6 md:px-10">
         <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-center max-w-3xl mx-auto leading-tight">
-          You're not bad at speaking. You're <span className="text-[#7C3AED]">undertrained</span>.
+          You're not bad at speaking. You're suffering from <span className="text-[#7C3AED]">Glossophobia</span>.
         </h2>
         <div className="mt-16 grid md:grid-cols-3 gap-5">
           {cards.map((c, i) => (
@@ -391,19 +392,19 @@ function Science() {
   return (
     <section id="science" className="py-24 md:py-32 bg-[#0c0c0c] border-y border-white/5">
       <div className="max-w-3xl mx-auto px-6 md:px-10 text-center">
-        <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-tight">
-          This isn't just practice. It's <span className="text-[#7C3AED]">rewiring</span>.
+        <h2 className="text-2xl md:text-4xl font-bold tracking-tight leading-tight">
+          This isn't just practice. It's <span className="text-[#7C3AED]">Cognitive Restructuring</span>.
         </h2>
         <p className="mt-8 text-[17px] text-[#a0a0a0] leading-[1.9]">
-          VoxMind is built on three evidence-backed methods:{" "}
-          <span className="text-[#F5F0E8]">Graduated Exposure Therapy</span> — starting small and
-          building up voluntarily; <span className="text-[#F5F0E8]">Cognitive Behavioral Therapy</span>{" "}
-          principles — reframing "I went blank" into "I covered 3 of 5 points"; and{" "}
+          VoxMind is built on three clinically-proven, evidence-backed methods:{" "}
+          <span className="text-[#F5F0E8]">Graduated Exposure Therapy</span> — starting small with an AI and
+          building up voluntarily; <span className="text-[#F5F0E8]">Cognitive Behavioral Therapy (CBT)</span>{" "}
+          principles — reframing catastrophic thoughts like "I will make a fool of myself" into "I successfully structured 3 points"; and{" "}
           <span className="text-[#F5F0E8]">Deliberate Practice</span> — high-volume, feedback-rich
-          reps that build real neural pathways.
+          reps that break the cycle of avoidance and rewire neural pathways.
         </p>
         <p className="mt-5 text-[17px] text-[#a0a0a0] leading-[1.9]">
-          Every session is a rep. Reps build the pathways. Pathways become confidence.
+          Every session acts as a digital exposure rep. Reps build the pathways. Pathways override panic.
         </p>
         <div className="mt-12 flex flex-wrap justify-center gap-3">
           {[
@@ -497,7 +498,7 @@ function FinalCTA() {
           <StartCTA size="lg">Start Practicing Now →</StartCTA>
         </div>
         <p className="mt-6 text-xs text-[#7a7a7a]">
-          Free to use. NVIDIA-powered AI. Runs in your browser.
+          Free to use. Groq-powered AI. Runs in your browser.
         </p>
       </div>
     </section>
@@ -518,6 +519,7 @@ function Footer() {
           <a href="#how" className="hover:text-[#F5F0E8] transition">How it works</a>
           <a href="#modes" className="hover:text-[#F5F0E8] transition">Modes</a>
           <a href="#science" className="hover:text-[#F5F0E8] transition">Science</a>
+          <Link to="/blog" className="hover:text-[#F5F0E8] transition">Blog</Link>
         </div>
       </div>
     </footer>

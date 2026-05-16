@@ -40,9 +40,16 @@ export const Route = createRootRoute({
       },
       { name: "author", content: "VoxMind" },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { property: "og:url", content: "https://voxmind.in" },
+      { property: "og:image", content: "https://voxmind.in/og-image.png" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "https://voxmind.in/og-image.png" },
     ],
     links: [
+      {
+        rel: "canonical",
+        href: "https://voxmind.in",
+      },
       {
         rel: "stylesheet",
         href: appCss,

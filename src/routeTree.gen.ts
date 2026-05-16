@@ -11,6 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BlogIndexRouteImport } from './routes/blog/index'
+import { Route as BlogStopSayingUmFillerWordsRouteImport } from './routes/blog/stop-saying-um-filler-words'
+import { Route as BlogPhysiologyStageFrightVagusNerveRouteImport } from './routes/blog/physiology-stage-fright-vagus-nerve'
+import { Route as BlogOvercomingGlossophobiaCbtRouteImport } from './routes/blog/overcoming-glossophobia-cbt'
+import { Route as BlogIntrovertsPublicSpeakingAdvantageRouteImport } from './routes/blog/introverts-public-speaking-advantage'
+import { Route as BlogImposterSyndromeTechnicalInterviewsRouteImport } from './routes/blog/imposter-syndrome-technical-interviews'
+import { Route as BlogExposureTherapyPublicSpeakingRouteImport } from './routes/blog/exposure-therapy-public-speaking'
 
 const AppRoute = AppRouteImport.update({
   id: '/app',
@@ -22,31 +29,128 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogStopSayingUmFillerWordsRoute =
+  BlogStopSayingUmFillerWordsRouteImport.update({
+    id: '/blog/stop-saying-um-filler-words',
+    path: '/blog/stop-saying-um-filler-words',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const BlogPhysiologyStageFrightVagusNerveRoute =
+  BlogPhysiologyStageFrightVagusNerveRouteImport.update({
+    id: '/blog/physiology-stage-fright-vagus-nerve',
+    path: '/blog/physiology-stage-fright-vagus-nerve',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const BlogOvercomingGlossophobiaCbtRoute =
+  BlogOvercomingGlossophobiaCbtRouteImport.update({
+    id: '/blog/overcoming-glossophobia-cbt',
+    path: '/blog/overcoming-glossophobia-cbt',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const BlogIntrovertsPublicSpeakingAdvantageRoute =
+  BlogIntrovertsPublicSpeakingAdvantageRouteImport.update({
+    id: '/blog/introverts-public-speaking-advantage',
+    path: '/blog/introverts-public-speaking-advantage',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const BlogImposterSyndromeTechnicalInterviewsRoute =
+  BlogImposterSyndromeTechnicalInterviewsRouteImport.update({
+    id: '/blog/imposter-syndrome-technical-interviews',
+    path: '/blog/imposter-syndrome-technical-interviews',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const BlogExposureTherapyPublicSpeakingRoute =
+  BlogExposureTherapyPublicSpeakingRouteImport.update({
+    id: '/blog/exposure-therapy-public-speaking',
+    path: '/blog/exposure-therapy-public-speaking',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/blog/exposure-therapy-public-speaking': typeof BlogExposureTherapyPublicSpeakingRoute
+  '/blog/imposter-syndrome-technical-interviews': typeof BlogImposterSyndromeTechnicalInterviewsRoute
+  '/blog/introverts-public-speaking-advantage': typeof BlogIntrovertsPublicSpeakingAdvantageRoute
+  '/blog/overcoming-glossophobia-cbt': typeof BlogOvercomingGlossophobiaCbtRoute
+  '/blog/physiology-stage-fright-vagus-nerve': typeof BlogPhysiologyStageFrightVagusNerveRoute
+  '/blog/stop-saying-um-filler-words': typeof BlogStopSayingUmFillerWordsRoute
+  '/blog/': typeof BlogIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/blog/exposure-therapy-public-speaking': typeof BlogExposureTherapyPublicSpeakingRoute
+  '/blog/imposter-syndrome-technical-interviews': typeof BlogImposterSyndromeTechnicalInterviewsRoute
+  '/blog/introverts-public-speaking-advantage': typeof BlogIntrovertsPublicSpeakingAdvantageRoute
+  '/blog/overcoming-glossophobia-cbt': typeof BlogOvercomingGlossophobiaCbtRoute
+  '/blog/physiology-stage-fright-vagus-nerve': typeof BlogPhysiologyStageFrightVagusNerveRoute
+  '/blog/stop-saying-um-filler-words': typeof BlogStopSayingUmFillerWordsRoute
+  '/blog': typeof BlogIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/blog/exposure-therapy-public-speaking': typeof BlogExposureTherapyPublicSpeakingRoute
+  '/blog/imposter-syndrome-technical-interviews': typeof BlogImposterSyndromeTechnicalInterviewsRoute
+  '/blog/introverts-public-speaking-advantage': typeof BlogIntrovertsPublicSpeakingAdvantageRoute
+  '/blog/overcoming-glossophobia-cbt': typeof BlogOvercomingGlossophobiaCbtRoute
+  '/blog/physiology-stage-fright-vagus-nerve': typeof BlogPhysiologyStageFrightVagusNerveRoute
+  '/blog/stop-saying-um-filler-words': typeof BlogStopSayingUmFillerWordsRoute
+  '/blog/': typeof BlogIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/blog/exposure-therapy-public-speaking'
+    | '/blog/imposter-syndrome-technical-interviews'
+    | '/blog/introverts-public-speaking-advantage'
+    | '/blog/overcoming-glossophobia-cbt'
+    | '/blog/physiology-stage-fright-vagus-nerve'
+    | '/blog/stop-saying-um-filler-words'
+    | '/blog/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app'
-  id: '__root__' | '/' | '/app'
+  to:
+    | '/'
+    | '/app'
+    | '/blog/exposure-therapy-public-speaking'
+    | '/blog/imposter-syndrome-technical-interviews'
+    | '/blog/introverts-public-speaking-advantage'
+    | '/blog/overcoming-glossophobia-cbt'
+    | '/blog/physiology-stage-fright-vagus-nerve'
+    | '/blog/stop-saying-um-filler-words'
+    | '/blog'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/blog/exposure-therapy-public-speaking'
+    | '/blog/imposter-syndrome-technical-interviews'
+    | '/blog/introverts-public-speaking-advantage'
+    | '/blog/overcoming-glossophobia-cbt'
+    | '/blog/physiology-stage-fright-vagus-nerve'
+    | '/blog/stop-saying-um-filler-words'
+    | '/blog/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRoute
+  BlogExposureTherapyPublicSpeakingRoute: typeof BlogExposureTherapyPublicSpeakingRoute
+  BlogImposterSyndromeTechnicalInterviewsRoute: typeof BlogImposterSyndromeTechnicalInterviewsRoute
+  BlogIntrovertsPublicSpeakingAdvantageRoute: typeof BlogIntrovertsPublicSpeakingAdvantageRoute
+  BlogOvercomingGlossophobiaCbtRoute: typeof BlogOvercomingGlossophobiaCbtRoute
+  BlogPhysiologyStageFrightVagusNerveRoute: typeof BlogPhysiologyStageFrightVagusNerveRoute
+  BlogStopSayingUmFillerWordsRoute: typeof BlogStopSayingUmFillerWordsRoute
+  BlogIndexRoute: typeof BlogIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +169,72 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/stop-saying-um-filler-words': {
+      id: '/blog/stop-saying-um-filler-words'
+      path: '/blog/stop-saying-um-filler-words'
+      fullPath: '/blog/stop-saying-um-filler-words'
+      preLoaderRoute: typeof BlogStopSayingUmFillerWordsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/physiology-stage-fright-vagus-nerve': {
+      id: '/blog/physiology-stage-fright-vagus-nerve'
+      path: '/blog/physiology-stage-fright-vagus-nerve'
+      fullPath: '/blog/physiology-stage-fright-vagus-nerve'
+      preLoaderRoute: typeof BlogPhysiologyStageFrightVagusNerveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/overcoming-glossophobia-cbt': {
+      id: '/blog/overcoming-glossophobia-cbt'
+      path: '/blog/overcoming-glossophobia-cbt'
+      fullPath: '/blog/overcoming-glossophobia-cbt'
+      preLoaderRoute: typeof BlogOvercomingGlossophobiaCbtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/introverts-public-speaking-advantage': {
+      id: '/blog/introverts-public-speaking-advantage'
+      path: '/blog/introverts-public-speaking-advantage'
+      fullPath: '/blog/introverts-public-speaking-advantage'
+      preLoaderRoute: typeof BlogIntrovertsPublicSpeakingAdvantageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/imposter-syndrome-technical-interviews': {
+      id: '/blog/imposter-syndrome-technical-interviews'
+      path: '/blog/imposter-syndrome-technical-interviews'
+      fullPath: '/blog/imposter-syndrome-technical-interviews'
+      preLoaderRoute: typeof BlogImposterSyndromeTechnicalInterviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/exposure-therapy-public-speaking': {
+      id: '/blog/exposure-therapy-public-speaking'
+      path: '/blog/exposure-therapy-public-speaking'
+      fullPath: '/blog/exposure-therapy-public-speaking'
+      preLoaderRoute: typeof BlogExposureTherapyPublicSpeakingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRoute,
+  BlogExposureTherapyPublicSpeakingRoute:
+    BlogExposureTherapyPublicSpeakingRoute,
+  BlogImposterSyndromeTechnicalInterviewsRoute:
+    BlogImposterSyndromeTechnicalInterviewsRoute,
+  BlogIntrovertsPublicSpeakingAdvantageRoute:
+    BlogIntrovertsPublicSpeakingAdvantageRoute,
+  BlogOvercomingGlossophobiaCbtRoute: BlogOvercomingGlossophobiaCbtRoute,
+  BlogPhysiologyStageFrightVagusNerveRoute:
+    BlogPhysiologyStageFrightVagusNerveRoute,
+  BlogStopSayingUmFillerWordsRoute: BlogStopSayingUmFillerWordsRoute,
+  BlogIndexRoute: BlogIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

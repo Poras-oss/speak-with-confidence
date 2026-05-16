@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { FeedbackPayload } from "./useNvidiaAI";
+import type { FeedbackPayload } from "./useGroqAI";
 import type { Difficulty, Domain, ModeId } from "@/config/modes";
 
 const KEYS = {
@@ -38,7 +38,7 @@ export const DEFAULT_SETTINGS: Settings = {
   showFillers: true,
   revealIdeal: true,
   sttEngine: "whisper",
-  whisperModel: "distil-small",
+  whisperModel: "tiny",
 };
 
 export interface SessionRecord {

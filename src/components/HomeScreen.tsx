@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { MODES, type ModeConfig, type ModeId } from "@/config/modes";
 import type { ResumeState, StreakState } from "@/hooks/useSessionStore";
+import type { WhisperLoadProgress } from "@/hooks/useWhisperSTT";
 import { ResumePanel } from "./ResumePanel";
 import { AuthButton } from "./AuthButton";
 
@@ -21,9 +22,11 @@ interface Props {
   totalSessions: number;
   resume: ResumeState | null;
   onResumeChange: (r: ResumeState | null) => void;
+  modelReady: boolean;
+  modelStatus: WhisperLoadProgress;
 }
 
-export function HomeScreen({ onPick, onOpenSettings, onOpenHistory, streak, totalSessions, resume, onResumeChange }: Props) {
+export function HomeScreen({ onPick, onOpenSettings, onOpenHistory, streak, totalSessions, resume, onResumeChange, modelReady, modelStatus }: Props) {
   const [motiv, setMotiv] = useState(MOTIVATIONS[0]);
   useEffect(() => {
     setMotiv(MOTIVATIONS[Math.floor(Math.random() * MOTIVATIONS.length)]);
@@ -59,9 +62,40 @@ export function HomeScreen({ onPick, onOpenSettings, onOpenHistory, streak, tota
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-14 w-full max-w-5xl">
           {MODES.filter((m) => !m.comingSoon).map((m, i) => (
-            <ModeCard key={m.id} mode={m} onClick={() => onPick(m.id as ModeId)} delay={i * 80} />
+            <ModeCard key={m.id} mode={m} onClick={() => onPick(m.id as ModeId)} delay={i * 80} disabled={!modelReady} />
           ))}
         </div>
+
+        {/* Model download progress */}
+        {!modelReady && (
+          <div className="mt-6 w-full max-w-md animate-fade-in">
+            <div className="bg-card border border-border rounded-xl p-4">
+              <div className="flex items-center gap-3 mb-2">
+                {modelStatus.status === "error" ? (
+                  <span className="text-destructive text-sm">⚠ {modelStatus.message}</span>
+                ) : (
+                  <>
+                    <div className="w-4 h-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                    <span className="text-warm text-sm">
+                      {modelStatus.status === "idle"
+                        ? "Preparing speech recognition…"
+                        : modelStatus.message || "Downloading model…"}
+                    </span>
+                  </>
+                )}
+              </div>
+              <div className="h-1.5 bg-input rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full transition-all duration-300"
+                  style={{ width: `${Math.round((modelStatus.progress || 0) * 100)}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-warm-muted/60 mt-2">
+                One-time download · cached for future sessions
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 w-full max-w-5xl">
           {MODES.filter((m) => m.comingSoon).map((m) => (
@@ -110,11 +144,16 @@ export function HomeScreen({ onPick, onOpenSettings, onOpenHistory, streak, tota
   );
 }
 
-function ModeCard({ mode, onClick, delay }: { mode: ModeConfig; onClick: () => void; delay: number }) {
+function ModeCard({ mode, onClick, delay, disabled }: { mode: ModeConfig; onClick: () => void; delay: number; disabled?: boolean }) {
   return (
     <button
       onClick={onClick}
-      className="group text-left bg-card border border-border rounded-2xl p-6 hover:border-warm/30 hover:bg-card/80 transition-all duration-300 animate-fade-up hover:-translate-y-0.5"
+      disabled={disabled}
+      className={`group text-left bg-card border border-border rounded-2xl p-6 transition-all duration-300 animate-fade-up ${
+        disabled
+          ? "opacity-50 cursor-not-allowed"
+          : "hover:border-warm/30 hover:bg-card/80 hover:-translate-y-0.5"
+      }`}
       style={{ animationDelay: `${delay}ms`, animationFillMode: "backwards" }}
     >
       <div className="flex items-start justify-between mb-4">

@@ -7,7 +7,8 @@ import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { HistoryDrawer } from "@/components/HistoryDrawer";
 import { MODES, type ModeId } from "@/config/modes";
 import { useSettings, useSessions, useStreak, useResume } from "@/hooks/useSessionStore";
-import { generateText, generateFeedback, type FeedbackPayload } from "@/hooks/useNvidiaAI";
+import { generateText, generateFeedback, type FeedbackPayload } from "@/hooks/useGroqAI";
+import { loadWhisper, type WhisperLoadProgress } from "@/hooks/useWhisperSTT";
 import {
   technicalQuestionPrompt,
   extemporeTopicPrompt,
@@ -63,6 +64,26 @@ function VoxMindApp() {
   const [feedback, setFeedback] = useState<FeedbackPayload | null>(null);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
+
+  // Preload Whisper model as soon as the app mounts (when whisper engine is selected)
+  const [modelStatus, setModelStatus] = useState<WhisperLoadProgress>({
+    status: "idle",
+    progress: 0,
+    message: "",
+  });
+  const modelReady = modelStatus.status === "ready";
+
+  useEffect(() => {
+    if (settings.sttEngine !== "whisper") {
+      // Browser STT doesn't need preloading
+      setModelStatus({ status: "ready", progress: 1, message: "Browser STT" });
+      return;
+    }
+    // Start preloading the whisper model immediately
+    loadWhisper(settings.whisperModel, setModelStatus).catch((e) => {
+      setModelStatus({ status: "error", progress: 0, message: e?.message || "Failed to load model" });
+    });
+  }, [settings.sttEngine, settings.whisperModel]);
 
   const fetchQuestion = useCallback(
     async (mode: ModeId) => {
@@ -185,6 +206,8 @@ function VoxMindApp() {
           totalSessions={sessions.length}
           resume={resume}
           onResumeChange={setResume}
+          modelReady={modelReady}
+          modelStatus={modelStatus}
         />
       )}
 

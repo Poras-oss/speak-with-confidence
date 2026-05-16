@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { DOMAINS, DURATIONS, type Domain, type Difficulty } from "@/config/modes";
 import { useApiKey, useSettings, useSessions, type WhisperModelId } from "@/hooks/useSessionStore";
-import { testApiKey } from "@/hooks/useNvidiaAI";
+import { testApiKey } from "@/hooks/useGroqAI";
 import { loadWhisper, type WhisperLoadProgress } from "@/hooks/useWhisperSTT";
 
 interface Props {
@@ -61,12 +61,12 @@ export function SettingsDrawer({ open, onClose }: Props) {
 
         <div className="p-6 space-y-8">
           {/* API key */}
-          <Section title="NVIDIA NIM API Key">
+          <Section title="Groq API Key">
             <input
               type="password"
               value={draftKey}
               onChange={(e) => setDraftKey(e.target.value)}
-              placeholder="nvapi-..."
+              placeholder="gsk_..."
               className="w-full bg-input/60 border border-border rounded-lg px-3 py-2.5 text-sm text-warm placeholder:text-warm-muted/50 focus:outline-none focus:ring-2 focus:ring-ring"
             />
             <div className="flex gap-2 mt-2">

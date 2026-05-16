@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { testApiKey } from "@/hooks/useNvidiaAI";
+import { testApiKey } from "@/hooks/useGroqAI";
 
 interface Props {
   onSaved: (key: string) => void;
@@ -32,7 +32,7 @@ export function SetupScreen({ onSaved }: Props) {
           Before we begin.
         </h1>
         <p className="text-warm-muted leading-relaxed mb-8">
-          VoxMind uses NVIDIA NIM to generate questions and feedback. You'll need a free
+          VoxMind uses Groq to generate questions and feedback. You'll need a free
           API key — it stays on your device.
         </p>
 
@@ -42,12 +42,12 @@ export function SetupScreen({ onSaved }: Props) {
             <span className="text-warm-muted">
               Visit{" "}
               <a
-                href="https://build.nvidia.com"
+                href="https://console.groq.com"
                 target="_blank"
                 rel="noreferrer"
                 className="text-warm underline underline-offset-4 decoration-border hover:decoration-warm transition"
               >
-                build.nvidia.com
+                console.groq.com
               </a>{" "}
               and sign in.
             </span>
@@ -55,7 +55,7 @@ export function SetupScreen({ onSaved }: Props) {
           <li className="flex gap-3">
             <span className="text-warm-muted">2.</span>
             <span className="text-warm-muted">
-              Open any model (e.g. <span className="text-warm">meta/llama-3.3-70b-instruct</span>) and click "Get API Key".
+              Go to "API Keys" and click "Create API Key".
             </span>
           </li>
           <li className="flex gap-3">
@@ -69,7 +69,7 @@ export function SetupScreen({ onSaved }: Props) {
             type="password"
             value={key}
             onChange={(e) => setKey(e.target.value)}
-            placeholder="nvapi-..."
+            placeholder="gsk_..."
             className="w-full bg-input/60 border border-border rounded-xl px-4 py-3.5 text-warm placeholder:text-warm-muted/50 focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition"
           />
           <button

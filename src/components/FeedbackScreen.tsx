@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { FeedbackPayload } from "@/hooks/useNvidiaAI";
+import type { FeedbackPayload } from "@/hooks/useGroqAI";
 import { ScoreCircle } from "./ScoreCircle";
 import { countFillers, highlightFillers } from "@/utils/fillerWords";
 

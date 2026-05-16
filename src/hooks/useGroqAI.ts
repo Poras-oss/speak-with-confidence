@@ -1,4 +1,4 @@
-import { nvidiaChat } from "@/server/nvidia.functions";
+import { groqChat } from "@/server/groq.functions";
 
 export interface FeedbackPayload {
   scores: {
@@ -14,7 +14,7 @@ export interface FeedbackPayload {
 }
 
 async function chat(apiKey: string, prompt: string, opts?: { temperature?: number; max_tokens?: number }) {
-  const result = await nvidiaChat({
+  const result = await groqChat({
     data: {
       prompt,
       temperature: opts?.temperature ?? 0.7,
@@ -23,7 +23,7 @@ async function chat(apiKey: string, prompt: string, opts?: { temperature?: numbe
     },
   });
   if (!result.ok) {
-    throw new Error(result.error || "NVIDIA request failed");
+    throw new Error(result.error || "Groq request failed");
   }
   return result.content;
 }
@@ -46,7 +46,7 @@ export async function generateFeedback(apiKey: string, prompt: string): Promise<
 
 export async function testApiKey(apiKey: string): Promise<{ ok: boolean; error?: string }> {
   try {
-    const result = await nvidiaChat({
+    const result = await groqChat({
       data: {
         prompt: "Say hi",
         temperature: 0,
@@ -55,16 +55,16 @@ export async function testApiKey(apiKey: string): Promise<{ ok: boolean; error?:
       },
     });
     if (result.ok && result.content) return { ok: true };
-    return { ok: false, error: result.error || "Empty response from NVIDIA API." };
+    return { ok: false, error: result.error || "Empty response from Groq API." };
   } catch (e: any) {
     return { ok: false, error: e?.message || "Request failed." };
   }
 }
 
-/** True if the server has a configured NVIDIA_API_KEY (no client key needed). */
+/** True if the server has a configured GROQ_API_KEY (no client key needed). */
 export async function serverKeyAvailable(): Promise<boolean> {
   try {
-    const result = await nvidiaChat({
+    const result = await groqChat({
       data: { prompt: "ping", temperature: 0, max_tokens: 1 },
     });
     // ok=true means it worked. ok=false with "not configured" means no env key.

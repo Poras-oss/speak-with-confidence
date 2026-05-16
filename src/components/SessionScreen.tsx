@@ -52,7 +52,8 @@ export function SessionScreen({
         const next = e + 1;
         if (next >= durationSec && !finishedRef.current) {
           finishedRef.current = true;
-          handleFinish();
+          // Defer to avoid setState-during-render warning
+          setTimeout(() => handleFinish(), 0);
         }
         return next;
       });

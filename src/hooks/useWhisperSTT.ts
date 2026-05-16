@@ -14,7 +14,7 @@ let loadingPromise: Promise<Pipeline> | null = null;
 const MODEL_MAP: Record<WhisperModelId, string> = {
   tiny: "Xenova/whisper-tiny.en",
   base: "Xenova/whisper-base.en",
-  "distil-small": "distil-whisper/distil-small.en",
+  "distil-small": "Xenova/whisper-base.en", // distil-small has ONNX compat issues; base is similar size and reliable
 };
 
 export interface WhisperLoadProgress {
@@ -22,6 +22,18 @@ export interface WhisperLoadProgress {
   progress: number; // 0..1 best-effort
   message: string;
 }
+
+const progressCallback = (onProgress?: (p: WhisperLoadProgress) => void) => (info: any) => {
+  if (info?.status === "progress") {
+    onProgress?.({
+      status: "downloading",
+      progress: typeof info.progress === "number" ? info.progress / 100 : 0,
+      message: `Downloading ${info.file ?? "model"}…`,
+    });
+  } else if (info?.status === "done" || info?.status === "ready") {
+    onProgress?.({ status: "ready", progress: 1, message: "Ready" });
+  }
+};
 
 export async function loadWhisper(
   modelId: WhisperModelId,
@@ -39,38 +51,46 @@ export async function loadWhisper(
 
     const repo = MODEL_MAP[modelId];
 
+    // Try WebGPU with q4f16 first (smallest + GPU-accelerated), then WASM with quantized
     let device: any = "wasm";
-    let dtype: any = "fp32";
+    let dtype: any = "q8";
+
     if (navigator.gpu) {
       try {
         const adapter = await navigator.gpu.requestAdapter();
         if (adapter) {
           device = "webgpu";
-          dtype = "fp16";
+          // q4f16 is specifically exported for WebGPU in Xenova repos (Transformers.js v3)
+          // and avoids the merged decoder subgraph validation bug in onnxruntime-web
+          dtype = "q4f16";
         }
       } catch (e) {
         console.warn("WebGPU not available, falling back to WASM");
       }
     }
 
-    const p = await pipeline("automatic-speech-recognition", repo, {
-      dtype,
-      device,
-      progress_callback: (info: any) => {
-        if (info?.status === "progress") {
-          onProgress?.({
-            status: "downloading",
-            progress: typeof info.progress === "number" ? info.progress / 100 : 0,
-            message: `Downloading ${info.file ?? "model"}…`,
-          });
-        } else if (info?.status === "done" || info?.status === "ready") {
-          onProgress?.({ status: "ready", progress: 1, message: "Ready" });
-        }
-      },
-    } as any);
-    cachedPipeline = { id: modelId, p };
-    onProgress?.({ status: "ready", progress: 1, message: "Ready" });
-    return p;
+    try {
+      const p = await pipeline("automatic-speech-recognition", repo, {
+        dtype,
+        device,
+        progress_callback: progressCallback(onProgress),
+      } as any);
+      cachedPipeline = { id: modelId, p };
+      onProgress?.({ status: "ready", progress: 1, message: "Ready" });
+      return p;
+    } catch (e: any) {
+      console.warn(`Whisper load failed with ${device}/${dtype}, trying WASM/q8 fallback`, e);
+      // Fallback: WASM + quantized (most compatible, works everywhere)
+      onProgress?.({ status: "downloading", progress: 0, message: "Falling back to CPU mode…" });
+      const p = await pipeline("automatic-speech-recognition", repo, {
+        dtype: "q8",
+        device: "wasm",
+        progress_callback: progressCallback(onProgress),
+      } as any);
+      cachedPipeline = { id: modelId, p };
+      onProgress?.({ status: "ready", progress: 1, message: "Ready" });
+      return p;
+    }
   })().finally(() => {
     loadingPromise = null;
   });
@@ -134,21 +154,29 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
     processingRef.current = true;
     try {
       const pipe = cachedPipeline?.p;
-      if (!pipe) return;
+      if (!pipe) {
+        console.warn("[Whisper] Pipeline not available, skipping chunk");
+        return;
+      }
       while (chunkQueueRef.current.length > 0) {
         const audio = chunkQueueRef.current.shift()!;
         try {
-          if (audio.length < 16000 * 0.3) continue; // <0.3s, skip silence
-          const out: any = await pipe(audio, { language: "english", task: "transcribe" });
+          if (audio.length < 16000 * 0.15) {
+            console.log("[Whisper] Chunk too short, skipping:", audio.length, "samples");
+            continue;
+          }
+          console.log("[Whisper] Transcribing chunk:", audio.length, "samples (~" + (audio.length / 16000).toFixed(1) + "s)");
+          const out: any = await pipe(audio);
           let text = (out?.text || "").trim();
+          console.log("[Whisper] Result:", JSON.stringify(text));
           if (text) {
              if (llm.isReady) {
                text = await llm.fixTranscript(text);
              }
              setTranscript((prev) => (prev ? prev + " " + text : text));
           }
-        } catch (e) {
-          // swallow per-chunk errors
+        } catch (e: any) {
+          console.error("[Whisper] Transcription error:", e?.message || e);
         }
       }
     } finally {
@@ -167,7 +195,7 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
 
   const stop = useCallback(() => {
     stoppedRef.current = true;
-    try { vadRef.current?.pause(); } catch {}
+    try { vadRef.current?.pause(); vadRef.current?.destroy(); } catch {}
     vadRef.current = null;
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = null;
@@ -189,17 +217,17 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
     setTranscript("");
     stoppedRef.current = false;
 
+    // Whisper should already be preloaded from the home screen.
+    // This call returns instantly if cached, or loads if somehow missed.
     try {
       await loadWhisper(modelId, setLoadStatus);
-      if (!llm.isReady) {
-        setLoadStatus({ status: "downloading", progress: 0.5, message: "Loading WebLLM..." });
-        await llm.load();
-        setLoadStatus({ status: "ready", progress: 1, message: "Ready" });
-      }
     } catch (e: any) {
       setError("Whisper model failed to load: " + (e?.message || "unknown error"));
       return;
     }
+
+    // WebLLM transcript cleanup is optional — never block session start for it.
+    // If it's already loaded, processQueue will use it. Otherwise, raw transcripts are fine.
 
     let stream: MediaStream;
     try {
@@ -228,14 +256,21 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
     rafRef.current = requestAnimationFrame(tickLevel);
 
     try {
-      vadRef.current = await MicVAD.start({
+      const vad = await MicVAD.new({
         stream,
+        // Load VAD assets from public/ directory (copied from node_modules)
+        modelURL: "/silero_vad_legacy.onnx",
+        workletURL: "/vad.worklet.bundle.min.js",
+        // Load ONNX runtime WASM from CDN to avoid Vite bundling issues
+        onnxWASMBasePath: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.25.1/dist/",
         onSpeechEnd: (audio: Float32Array) => {
           if (stoppedRef.current) return;
           chunkQueueRef.current.push(audio);
           processQueue();
         },
       });
+      vad.start();
+      vadRef.current = vad;
       setListening(true);
     } catch (e: any) {
       setError("VAD initialization failed: " + (e?.message || "unknown error"));

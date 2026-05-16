@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 
-const BASE_URL = "https://integrate.api.nvidia.com/v1";
-const MODEL = "meta/llama-3.3-70b-instruct";
+const BASE_URL = "https://api.groq.com/openai/v1";
+const MODEL = "llama-3.3-70b-versatile";
 
 interface ChatInput {
   prompt: string;
@@ -10,7 +10,7 @@ interface ChatInput {
   apiKeyOverride?: string;
 }
 
-export const nvidiaChat = createServerFn({ method: "POST" })
+export const groqChat = createServerFn({ method: "POST" })
   .inputValidator((input: ChatInput) => {
     if (!input || typeof input.prompt !== "string" || input.prompt.length === 0) {
       throw new Error("prompt is required");
@@ -24,9 +24,9 @@ export const nvidiaChat = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }) => {
-    const apiKey = data.apiKeyOverride || process.env.NVIDIA_API_KEY;
+    const apiKey = data.apiKeyOverride || process.env.GROQ_API_KEY;
     if (!apiKey) {
-      return { ok: false as const, error: "NVIDIA_API_KEY not configured on server.", content: "" };
+      return { ok: false as const, error: "GROQ_API_KEY not configured on server.", content: "" };
     }
     try {
       const res = await fetch(`${BASE_URL}/chat/completions`, {
@@ -45,7 +45,7 @@ export const nvidiaChat = createServerFn({ method: "POST" })
       });
       if (!res.ok) {
         const text = await res.text().catch(() => "");
-        return { ok: false as const, error: `NVIDIA API ${res.status}: ${text.slice(0, 200)}`, content: "" };
+        return { ok: false as const, error: `Groq API ${res.status}: ${text.slice(0, 200)}`, content: "" };
       }
       const json: any = await res.json();
       const content: string = json?.choices?.[0]?.message?.content ?? "";
