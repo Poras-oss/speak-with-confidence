@@ -5,9 +5,10 @@ import { useWhisperSTT, type UseWhisperResult } from "./useWhisperSTT";
 import { useGroqSTT } from "./useGroqSTT";
 import { useSettings } from "./useSessionStore";
 
-export type TranscriberResult = UseSpeechRecognitionResult & {
+export type TranscriberResult = Omit<UseSpeechRecognitionResult, "stop"> & {
   engine: "groq" | "whisper" | "browser";
   loadStatus?: UseWhisperResult["loadStatus"];
+  stop: () => Promise<string>;
 };
 
 export function useTranscriber(): TranscriberResult {

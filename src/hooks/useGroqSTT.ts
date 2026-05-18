@@ -56,6 +56,16 @@ export function useGroqSTT(): UseWhisperResult {
 
   const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState("");
+  const transcriptRef = useRef("");
+  
+  const updateTranscript = useCallback((text: string) => {
+    setTranscript((prev) => {
+      const next = prev ? prev + " " + text : text;
+      transcriptRef.current = next;
+      return next;
+    });
+  }, []);
+
   const [error, setError] = useState<string | null>(null);
   const [level, setLevel] = useState(0);
   const [loadStatus, setLoadStatus] = useState<WhisperLoadProgress>({
@@ -118,7 +128,7 @@ export function useGroqSTT(): UseWhisperResult {
              if (llmRef.current.isReady) {
                text = await llmRef.current.fixTranscript(text);
              }
-             setTranscript((prev) => (prev ? prev + " " + text : text));
+             updateTranscript(text);
           }
         } catch (e: any) {
           console.error("[Groq STT] Transcription error:", e?.message || e);
@@ -136,8 +146,17 @@ export function useGroqSTT(): UseWhisperResult {
     setLoadStatus({ status: "ready", progress: 1, message: "Groq API Ready" });
   }, []);
 
-  const stop = useCallback(() => {
+  const stop = useCallback(async (): Promise<string> => {
     stoppedRef.current = true;
+    
+    // Give VAD a short grace period to detect end of speech if user just stopped talking
+    await new Promise((r) => setTimeout(r, 600));
+
+    // Wait for ongoing transcription to finish
+    while (processingRef.current || chunkQueueRef.current.length > 0) {
+      await new Promise((r) => setTimeout(r, 100));
+    }
+
     try { vadRef.current?.pause(); vadRef.current?.destroy(); } catch {}
     vadRef.current = null;
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -149,6 +168,8 @@ export function useGroqSTT(): UseWhisperResult {
     analyserRef.current = null;
     setListening(false);
     setLevel(0);
+    
+    return transcriptRef.current;
   }, []);
 
   const start = useCallback(async () => {
@@ -158,6 +179,7 @@ export function useGroqSTT(): UseWhisperResult {
     }
     setError(null);
     setTranscript("");
+    transcriptRef.current = "";
     stoppedRef.current = false;
 
     let stream: MediaStream;
@@ -205,7 +227,10 @@ export function useGroqSTT(): UseWhisperResult {
     }
   }, [supported, tickLevel, processQueue]);
 
-  const reset = useCallback(() => setTranscript(""), []);
+  const reset = useCallback(() => {
+    setTranscript("");
+    transcriptRef.current = "";
+  }, []);
 
   useEffect(() => () => stop(), [stop]);
 

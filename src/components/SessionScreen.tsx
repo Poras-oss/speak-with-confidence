@@ -32,6 +32,7 @@ export function SessionScreen({
   const sr = useTranscriber();
   const [elapsed, setElapsed] = useState(0);
   const [started, setStarted] = useState(false);
+  const [finishing, setFinishing] = useState(false);
   const finishedRef = useRef(false);
   const startedAtRef = useRef<number | null>(null);
 
@@ -44,32 +45,55 @@ export function SessionScreen({
     }
   }, [questionLoading, question, started, sr]);
 
+  const latestTranscriptRef = useRef("");
+  const latestInterimRef = useRef("");
+  const latestDurationRef = useRef(durationSec);
+  
+  useEffect(() => {
+    latestTranscriptRef.current = sr.transcript;
+    latestInterimRef.current = sr.interim;
+  }, [sr.transcript, sr.interim]);
+
+  useEffect(() => {
+    latestDurationRef.current = durationSec;
+  }, [durationSec]);
+
+  const handleFinish = useCallback(async () => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    setFinishing(true);
+    const elapsedSec = startedAtRef.current
+      ? Math.round((Date.now() - startedAtRef.current) / 1000)
+      : elapsed;
+    
+    let finalTxStr = "";
+    try {
+      finalTxStr = (await sr.stop()) || "";
+    } catch {
+      // ignore
+    }
+    
+    const finalTx = finalTxStr || [latestTranscriptRef.current, latestInterimRef.current].filter(Boolean).join(" ");
+    onFinish(finalTx, elapsedSec);
+  }, [sr, elapsed, onFinish]);
+
   // Timer
   useEffect(() => {
     if (!started) return;
     const t = setInterval(() => {
       setElapsed((e) => {
         const next = e + 1;
-        if (next >= durationSec && !finishedRef.current) {
-          finishedRef.current = true;
-          // Defer to avoid setState-during-render warning
+        if (next >= latestDurationRef.current && !finishedRef.current) {
+          // Trigger finish outside of setElapsed to avoid state update loops
           setTimeout(() => handleFinish(), 0);
         }
         return next;
       });
     }, 1000);
     return () => clearInterval(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [started, durationSec]);
+  }, [started, handleFinish]);
 
-  const handleFinish = useCallback(() => {
-    finishedRef.current = true;
-    const elapsedSec = startedAtRef.current
-      ? Math.round((Date.now() - startedAtRef.current) / 1000)
-      : elapsed;
-    sr.stop();
-    onFinish(sr.transcript || sr.interim || "", elapsedSec);
-  }, [sr, elapsed, onFinish]);
+
 
   // Spacebar shortcut
   useEffect(() => {
@@ -157,7 +181,7 @@ export function SessionScreen({
             </button>
             <button
               onClick={handleFinish}
-              disabled={!started}
+              disabled={!started || finishing}
               className="px-8 py-3.5 rounded-xl font-medium text-base transition-all hover:scale-[1.02] disabled:opacity-50"
               style={{
                 background: "color-mix(in oklab, var(--color-destructive) 85%, black)",
@@ -165,7 +189,7 @@ export function SessionScreen({
                 boxShadow: "0 0 0 1px color-mix(in oklab, var(--color-destructive) 50%, transparent), 0 8px 32px -12px color-mix(in oklab, var(--color-destructive) 60%, transparent)",
               }}
             >
-              STOP & GET FEEDBACK
+              {finishing ? "FINISHING..." : "STOP & GET FEEDBACK"}
             </button>
             <button
               onClick={onExit}

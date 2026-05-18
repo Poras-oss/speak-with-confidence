@@ -107,7 +107,7 @@ export interface UseWhisperResult {
   level: number;
   loadStatus: WhisperLoadProgress;
   start: () => Promise<void>;
-  stop: () => void;
+  stop: () => Promise<string>;
   reset: () => void;
   preload: () => Promise<void>;
 }
@@ -118,6 +118,16 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
   useEffect(() => { llmRef.current = llm; }, [llm]);
   const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState("");
+  const transcriptRef = useRef("");
+  
+  const updateTranscript = useCallback((text: string) => {
+    setTranscript((prev) => {
+      const next = prev ? prev + " " + text : text;
+      transcriptRef.current = next;
+      return next;
+    });
+  }, []);
+  
   const [error, setError] = useState<string | null>(null);
   const [level, setLevel] = useState(0);
   const [loadStatus, setLoadStatus] = useState<WhisperLoadProgress>({
@@ -179,7 +189,7 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
              if (llmRef.current.isReady) {
                text = await llmRef.current.fixTranscript(text);
              }
-             setTranscript((prev) => (prev ? prev + " " + text : text));
+             updateTranscript(text);
           }
         } catch (e: any) {
           console.error("[Whisper] Transcription error:", e?.message || e);
@@ -202,8 +212,17 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
     }
   }, [modelId]);
 
-  const stop = useCallback(() => {
+  const stop = useCallback(async (): Promise<string> => {
     stoppedRef.current = true;
+    
+    // Give VAD a short grace period to detect end of speech if user just stopped talking
+    await new Promise((r) => setTimeout(r, 600));
+
+    // Wait for ongoing transcription to finish
+    while (processingRef.current || chunkQueueRef.current.length > 0) {
+      await new Promise((r) => setTimeout(r, 100));
+    }
+
     try { vadRef.current?.pause(); vadRef.current?.destroy(); } catch {}
     vadRef.current = null;
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -215,6 +234,8 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
     analyserRef.current = null;
     setListening(false);
     setLevel(0);
+    
+    return transcriptRef.current;
   }, []);
 
   const start = useCallback(async () => {
@@ -224,6 +245,7 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
     }
     setError(null);
     setTranscript("");
+    transcriptRef.current = "";
     stoppedRef.current = false;
 
     // Whisper should already be preloaded from the home screen.
@@ -286,7 +308,10 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
     }
   }, [supported, modelId, tickLevel, processQueue]);
 
-  const reset = useCallback(() => setTranscript(""), []);
+  const reset = useCallback(() => {
+    setTranscript("");
+    transcriptRef.current = "";
+  }, []);
 
   useEffect(() => () => stop(), [stop]);
 

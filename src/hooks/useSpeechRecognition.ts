@@ -10,7 +10,7 @@ export interface UseSpeechRecognitionResult {
   error: string | null;
   level: number; // 0..1 mic level
   start: () => Promise<void>;
-  stop: () => void;
+  stop: () => Promise<string>;
   reset: () => void;
 }
 
@@ -31,6 +31,24 @@ export function useSpeechRecognition(): UseSpeechRecognitionResult {
   const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [interim, setInterim] = useState("");
+  const transcriptRef = useRef("");
+  const interimRef = useRef("");
+  
+  const updateTranscript = useCallback((final: string) => {
+    setTranscript((prev) => {
+      const next = (prev ? prev + " " : "") + final;
+      transcriptRef.current = next;
+      return next;
+    });
+    setInterim("");
+    interimRef.current = "";
+  }, []);
+
+  const updateInterim = useCallback((text: string) => {
+    setInterim(text);
+    interimRef.current = text;
+  }, []);
+
   const [error, setError] = useState<string | null>(null);
   const [level, setLevel] = useState(0);
 
@@ -49,7 +67,7 @@ export function useSpeechRecognition(): UseSpeechRecognitionResult {
     rafRef.current = requestAnimationFrame(tickLevel);
   }, []);
 
-  const stop = useCallback(() => {
+  const stop = useCallback(async (): Promise<string> => {
     restartRef.current = false;
     try { recognitionRef.current?.stop(); } catch {}
     recognitionRef.current = null;
@@ -62,6 +80,11 @@ export function useSpeechRecognition(): UseSpeechRecognitionResult {
     analyserRef.current = null;
     setListening(false);
     setLevel(0);
+    
+    // Give browser speech API a tiny bit of time to fire a final onresult if it wants to
+    await new Promise((r) => setTimeout(r, 100));
+    
+    return [transcriptRef.current, interimRef.current].filter(Boolean).join(" ");
   }, []);
 
   const start = useCallback(async () => {
@@ -71,7 +94,9 @@ export function useSpeechRecognition(): UseSpeechRecognitionResult {
     }
     setError(null);
     setTranscript("");
+    transcriptRef.current = "";
     setInterim("");
+    interimRef.current = "";
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -103,10 +128,9 @@ export function useSpeechRecognition(): UseSpeechRecognitionResult {
         else interimChunk += r[0].transcript;
       }
       if (finalChunk) {
-        setTranscript((prev) => (prev ? prev + " " : "") + finalChunk.trim());
-        setInterim("");
+        updateTranscript(finalChunk.trim());
       } else {
-        setInterim(interimChunk);
+        updateInterim(interimChunk);
       }
     };
     rec.onerror = (e: any) => {
@@ -134,7 +158,9 @@ export function useSpeechRecognition(): UseSpeechRecognitionResult {
 
   const reset = useCallback(() => {
     setTranscript("");
+    transcriptRef.current = "";
     setInterim("");
+    interimRef.current = "";
   }, []);
 
   useEffect(() => () => stop(), [stop]);
