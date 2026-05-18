@@ -4,6 +4,7 @@ import { useWebLLM } from "./useWebLLM";
 import { useApiKey } from "./useSessionStore";
 import { groqTranscribe } from "@/server/groq.functions";
 import type { WhisperLoadProgress, UseWhisperResult } from "./useWhisperSTT";
+import type { TranscriptChunk } from "./useTranscriber";
 
 function float32ToWavBase64(audio: Float32Array, sampleRate = 16000): string {
   const buffer = new ArrayBuffer(44 + audio.length * 2);
@@ -55,13 +56,25 @@ export function useGroqSTT(): UseWhisperResult {
   useEffect(() => { llmRef.current = llm; }, [llm]);
 
   const [listening, setListening] = useState(false);
+  const [isVoiceActive, setIsVoiceActive] = useState(false);
   const [transcript, setTranscript] = useState("");
   const transcriptRef = useRef("");
   
+  const [chunks, setChunks] = useState<TranscriptChunk[]>([]);
+  const chunksRef = useRef<TranscriptChunk[]>([]);
+
   const updateTranscript = useCallback((text: string) => {
     setTranscript((prev) => {
       const next = prev ? prev + " " + text : text;
       transcriptRef.current = next;
+      return next;
+    });
+  }, []);
+
+  const updateChunk = useCallback((id: string, updates: Partial<TranscriptChunk>) => {
+    setChunks((prev) => {
+      const next = prev.map((c) => (c.id === id ? { ...c, ...updates } : c));
+      chunksRef.current = next;
       return next;
     });
   }, []);
@@ -79,9 +92,12 @@ export function useGroqSTT(): UseWhisperResult {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const rafRef = useRef<number | null>(null);
-  const chunkQueueRef = useRef<Float32Array[]>([]);
+  const chunkQueueRef = useRef<{ audio: Float32Array; chunkId: string }[]>([]);
   const processingRef = useRef(false);
   const stoppedRef = useRef(false);
+  const activeGhostIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const activeGhostIdRef = useRef<string | null>(null);
+  const isSpeakingRealtimeRef = useRef(false);
 
   const supported = typeof window !== "undefined" && !!window.MediaRecorder && !!navigator.mediaDevices;
 
@@ -104,10 +120,15 @@ export function useGroqSTT(): UseWhisperResult {
     processingRef.current = true;
     try {
       while (chunkQueueRef.current.length > 0) {
-        const audio = chunkQueueRef.current.shift()!;
+        const { audio, chunkId } = chunkQueueRef.current.shift()!;
         try {
           if (audio.length < 16000 * 0.8) {
             console.log("[Groq STT] Chunk too short, skipping:", audio.length, "samples");
+            setChunks((prev) => {
+              const next = prev.filter(c => c.id !== chunkId);
+              chunksRef.current = next;
+              return next;
+            });
             continue;
           }
           console.log("[Groq STT] Transcribing chunk:", audio.length, "samples (~" + (audio.length / 16000).toFixed(1) + "s)");
@@ -120,6 +141,11 @@ export function useGroqSTT(): UseWhisperResult {
           });
           if (!out.ok) {
             console.error("[Groq STT] API Error:", out.error);
+            setChunks((prev) => {
+              const next = prev.filter(c => c.id !== chunkId);
+              chunksRef.current = next;
+              return next;
+            });
             continue;
           }
           let text = (out.text || "").trim();
@@ -128,7 +154,21 @@ export function useGroqSTT(): UseWhisperResult {
              if (llmRef.current.isReady) {
                text = await llmRef.current.fixTranscript(text);
              }
+             
+             const words = text.split(/\s+/);
+             updateChunk(chunkId, {
+               status: 'arriving',
+               words,
+               arrivedAt: Date.now()
+             });
+             
+             setTimeout(() => {
+               updateChunk(chunkId, { status: 'confirmed' });
+             }, words.length * 60);
+
              updateTranscript(text);
+          } else {
+             updateChunk(chunkId, { status: 'confirmed', words: [] });
           }
         } catch (e: any) {
           console.error("[Groq STT] Transcription error:", e?.message || e);
@@ -159,6 +199,8 @@ export function useGroqSTT(): UseWhisperResult {
 
     try { vadRef.current?.pause(); vadRef.current?.destroy(); } catch {}
     vadRef.current = null;
+    if (activeGhostIntervalRef.current) clearInterval(activeGhostIntervalRef.current);
+    activeGhostIntervalRef.current = null;
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = null;
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -167,6 +209,7 @@ export function useGroqSTT(): UseWhisperResult {
     audioCtxRef.current = null;
     analyserRef.current = null;
     setListening(false);
+    setIsVoiceActive(false);
     setLevel(0);
     
     return transcriptRef.current;
@@ -180,7 +223,12 @@ export function useGroqSTT(): UseWhisperResult {
     setError(null);
     setTranscript("");
     transcriptRef.current = "";
+    setChunks([]);
+    chunksRef.current = [];
     stoppedRef.current = false;
+    if (activeGhostIntervalRef.current) clearInterval(activeGhostIntervalRef.current);
+    activeGhostIntervalRef.current = null;
+    activeGhostIdRef.current = null;
 
     let stream: MediaStream;
     try {
@@ -213,9 +261,76 @@ export function useGroqSTT(): UseWhisperResult {
         modelURL: "/silero_vad_legacy.onnx",
         workletURL: "/vad.worklet.bundle.min.js",
         onnxWASMBasePath: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.25.1/dist/",
+        onFrameProcessed: (probs: any) => {
+          isSpeakingRealtimeRef.current = probs.isSpeech > 0.5;
+        },
+        onSpeechStart: () => {
+          setIsVoiceActive(true);
+          isSpeakingRealtimeRef.current = true;
+          
+          const chunkId = crypto.randomUUID();
+          activeGhostIdRef.current = chunkId;
+          
+          const newChunk: TranscriptChunk = {
+            id: chunkId,
+            status: 'ghost',
+            ghostText: '█'.repeat(Math.floor(Math.random() * 4) + 3),
+            words: [],
+            createdAt: Date.now()
+          };
+          
+          setChunks((prev) => {
+            const next = [...prev, newChunk];
+            chunksRef.current = next;
+            return next;
+          });
+
+          // Grow the ghost block while they are speaking (approx 2.5 words/sec -> 1 word every 400ms)
+          if (activeGhostIntervalRef.current) clearInterval(activeGhostIntervalRef.current);
+          activeGhostIntervalRef.current = setInterval(() => {
+            if (!isSpeakingRealtimeRef.current) return; // Pause growth if they pause speaking
+            
+            setChunks(prev => {
+              const next = [...prev];
+              const idx = next.findIndex(c => c.id === chunkId);
+              if (idx !== -1) {
+                 const word = '█'.repeat(Math.floor(Math.random() * 4) + 3);
+                 next[idx] = { ...next[idx], ghostText: next[idx].ghostText + ' ' + word };
+                 chunksRef.current = next;
+              }
+              return next;
+            });
+          }, 400);
+        },
         onSpeechEnd: (audio: Float32Array) => {
+          setIsVoiceActive(false);
+          if (activeGhostIntervalRef.current) {
+            clearInterval(activeGhostIntervalRef.current);
+            activeGhostIntervalRef.current = null;
+          }
           if (stoppedRef.current) return;
-          chunkQueueRef.current.push(audio);
+          
+          const chunkId = activeGhostIdRef.current;
+          activeGhostIdRef.current = null;
+          
+          const durationSec = audio.length / 16000;
+          const estimatedWords = Math.max(3, Math.min(Math.round(durationSec * 2.4), 22));
+          const finalGhostText = Array.from({ length: estimatedWords }, () =>
+            '█'.repeat(Math.floor(Math.random() * 4) + 3)
+          ).join(' ');
+
+          if (chunkId) {
+            updateChunk(chunkId, { ghostText: finalGhostText });
+            
+            setTimeout(() => {
+              const currentChunk = chunksRef.current.find(c => c.id === chunkId);
+              if (currentChunk && currentChunk.status === 'ghost') {
+                updateChunk(chunkId, { status: 'stale-ghost' });
+              }
+            }, 4000);
+
+            chunkQueueRef.current.push({ audio, chunkId });
+          }
           processQueue();
         },
       });
@@ -230,6 +345,8 @@ export function useGroqSTT(): UseWhisperResult {
   const reset = useCallback(() => {
     setTranscript("");
     transcriptRef.current = "";
+    setChunks([]);
+    chunksRef.current = [];
   }, []);
 
   useEffect(() => () => stop(), [stop]);
@@ -246,5 +363,7 @@ export function useGroqSTT(): UseWhisperResult {
     stop,
     reset,
     preload,
+    chunks,
+    isVoiceActive,
   };
 }

@@ -152,7 +152,7 @@ export function SessionScreen({
       {/* Middle — Transcription */}
       <div className="flex-1 min-h-0 relative">
         <div className="absolute inset-0">
-          <TranscriptionDisplay transcript={sr.transcript} interim={sr.interim} />
+          <TranscriptionDisplay transcript={sr.transcript} interim={sr.interim} chunks={sr.chunks} listening={sr.listening} />
         </div>
         {sr.error && (
           <div className="absolute top-2 left-1/2 -translate-x-1/2 text-sm text-destructive bg-card border border-border rounded-lg px-4 py-2">
@@ -168,7 +168,9 @@ export function SessionScreen({
             <div className="tabular-nums text-warm font-medium text-base">
               {String(mins).padStart(2, "0")}:{String(secs).padStart(2, "0")}
             </div>
-            <MicLevelMeter level={sr.level} active={sr.listening} />
+            <div className={sr.isVoiceActive ? "mic-active-pulse" : ""}>
+              <MicLevelMeter level={sr.level} active={sr.isVoiceActive || sr.listening} />
+            </div>
             <span className="text-xs opacity-60">Press Space to stop</span>
           </div>
 

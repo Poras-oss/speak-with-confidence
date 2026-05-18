@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { WhisperModelId } from "./useSessionStore";
 import { MicVAD } from "@ricky0123/vad-web";
 import { useWebLLM } from "./useWebLLM";
+import type { TranscriptChunk } from "./useTranscriber";
 
 type Pipeline = any;
 
@@ -110,6 +111,8 @@ export interface UseWhisperResult {
   stop: () => Promise<string>;
   reset: () => void;
   preload: () => Promise<void>;
+  chunks?: TranscriptChunk[];
+  isVoiceActive?: boolean;
 }
 
 export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {

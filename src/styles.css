@@ -164,3 +164,33 @@
 @utility bg-canvas {
   background-color: var(--color-canvas);
 }
+
+/* Psychological UI Animations */
+.word-arriving {
+  display: inline-block;
+  opacity: 0;
+  animation: word-pop 0.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes word-pop {
+  from { opacity: 0; transform: translateY(5px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.chunk-ghost { opacity: 0; transition: opacity 0.12s ease 0.18s; }
+.chunk-ghost.visible { opacity: 1; }
+.chunk-ghost-stale {
+  color: var(--color-warm-muted) !important;
+  opacity: 0.4 !important;
+  transition: opacity 0.8s ease;
+}
+
+.mic-active-pulse {
+  animation: mic-pulse 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes mic-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}

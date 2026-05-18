@@ -5,10 +5,21 @@ import { useWhisperSTT, type UseWhisperResult } from "./useWhisperSTT";
 import { useGroqSTT } from "./useGroqSTT";
 import { useSettings } from "./useSessionStore";
 
+export interface TranscriptChunk {
+  id: string;
+  status: 'ghost' | 'arriving' | 'confirmed' | 'stale-ghost';
+  ghostText: string;
+  words: string[];
+  arrivedAt?: number;
+  createdAt: number;
+}
+
 export type TranscriberResult = Omit<UseSpeechRecognitionResult, "stop"> & {
   engine: "groq" | "whisper" | "browser";
   loadStatus?: UseWhisperResult["loadStatus"];
   stop: () => Promise<string>;
+  chunks?: TranscriptChunk[];
+  isVoiceActive?: boolean;
 };
 
 export function useTranscriber(): TranscriberResult {
@@ -30,6 +41,8 @@ export function useTranscriber(): TranscriberResult {
       stop: groq.stop,
       reset: groq.reset,
       loadStatus: groq.loadStatus,
+      chunks: groq.chunks,
+      isVoiceActive: groq.isVoiceActive,
     };
   }
 
