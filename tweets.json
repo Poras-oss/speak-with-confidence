@@ -13,6 +13,20 @@
   },
   "tweets": [
     {
+      "id": "1779729083158",
+      "content": "VoxMind update: Just added live keys to our premium features, including a Razorpay integration to help users upgrade their public speaking practice sessions. Now, users can access more advanced tools to train their \"voice muscle\" and rebuild speaking confidence. #VoxMind",
+      "source": "commit",
+      "sourceDetail": "added live keys",
+      "createdAt": "2026-05-25T17:11:23.158Z",
+      "publish": false,
+      "scheduledAt": null,
+      "tags": [
+        "buildinpublic",
+        "coding"
+      ],
+      "characterCount": 271
+    },
+    {
       "id": "1779712000676",
       "content": "Built a payment system for VoxMind, my AI-powered public speaking trainer. Now users can upgrade to premium and unlock more features to help them rebuild speaking confidence. One step closer to making public speaking practice accessible to all!\" #VoxMind",
       "source": "commit",

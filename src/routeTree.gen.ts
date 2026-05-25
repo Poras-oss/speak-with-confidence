@@ -18,6 +18,7 @@ import { Route as BlogOvercomingGlossophobiaCbtRouteImport } from './routes/blog
 import { Route as BlogIntrovertsPublicSpeakingAdvantageRouteImport } from './routes/blog/introverts-public-speaking-advantage'
 import { Route as BlogImposterSyndromeTechnicalInterviewsRouteImport } from './routes/blog/imposter-syndrome-technical-interviews'
 import { Route as BlogExposureTherapyPublicSpeakingRouteImport } from './routes/blog/exposure-therapy-public-speaking'
+import { Route as BlogSlugRouteImport } from './routes/blog/$slug'
 
 const AppRoute = AppRouteImport.update({
   id: '/app',
@@ -70,10 +71,16 @@ const BlogExposureTherapyPublicSpeakingRoute =
     path: '/blog/exposure-therapy-public-speaking',
     getParentRoute: () => rootRouteImport,
   } as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/blog/exposure-therapy-public-speaking': typeof BlogExposureTherapyPublicSpeakingRoute
   '/blog/imposter-syndrome-technical-interviews': typeof BlogImposterSyndromeTechnicalInterviewsRoute
   '/blog/introverts-public-speaking-advantage': typeof BlogIntrovertsPublicSpeakingAdvantageRoute
@@ -85,6 +92,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/blog/exposure-therapy-public-speaking': typeof BlogExposureTherapyPublicSpeakingRoute
   '/blog/imposter-syndrome-technical-interviews': typeof BlogImposterSyndromeTechnicalInterviewsRoute
   '/blog/introverts-public-speaking-advantage': typeof BlogIntrovertsPublicSpeakingAdvantageRoute
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/blog/exposure-therapy-public-speaking': typeof BlogExposureTherapyPublicSpeakingRoute
   '/blog/imposter-syndrome-technical-interviews': typeof BlogImposterSyndromeTechnicalInterviewsRoute
   '/blog/introverts-public-speaking-advantage': typeof BlogIntrovertsPublicSpeakingAdvantageRoute
@@ -110,6 +119,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/app'
+    | '/blog/$slug'
     | '/blog/exposure-therapy-public-speaking'
     | '/blog/imposter-syndrome-technical-interviews'
     | '/blog/introverts-public-speaking-advantage'
@@ -121,6 +131,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/app'
+    | '/blog/$slug'
     | '/blog/exposure-therapy-public-speaking'
     | '/blog/imposter-syndrome-technical-interviews'
     | '/blog/introverts-public-speaking-advantage'
@@ -132,6 +143,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/app'
+    | '/blog/$slug'
     | '/blog/exposure-therapy-public-speaking'
     | '/blog/imposter-syndrome-technical-interviews'
     | '/blog/introverts-public-speaking-advantage'
@@ -144,6 +156,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRoute
+  BlogSlugRoute: typeof BlogSlugRoute
   BlogExposureTherapyPublicSpeakingRoute: typeof BlogExposureTherapyPublicSpeakingRoute
   BlogImposterSyndromeTechnicalInterviewsRoute: typeof BlogImposterSyndromeTechnicalInterviewsRoute
   BlogIntrovertsPublicSpeakingAdvantageRoute: typeof BlogIntrovertsPublicSpeakingAdvantageRoute
@@ -218,12 +231,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogExposureTherapyPublicSpeakingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRoute,
+  BlogSlugRoute: BlogSlugRoute,
   BlogExposureTherapyPublicSpeakingRoute:
     BlogExposureTherapyPublicSpeakingRoute,
   BlogImposterSyndromeTechnicalInterviewsRoute:
