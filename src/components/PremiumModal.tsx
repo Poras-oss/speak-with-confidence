@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createRazorpayOrderEdge, upgradeToPremium } from "@/utils/supabase";
-import useRazorpay from "react-razorpay";
+import { useRazorpay } from "react-razorpay";
 
 interface Props {
   open: boolean;
@@ -14,7 +14,7 @@ export function PremiumModal({ open, onClose, userId, onSuccess }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   // Safely hook into react-razorpay
-  const [RazorpayHook, isLoaded] = useRazorpay();
+  const { Razorpay: RazorpayHook, isLoading: isLoaded } = useRazorpay();
 
   if (!open) return null;
 
@@ -34,7 +34,7 @@ export function PremiumModal({ open, onClose, userId, onSuccess }: Props) {
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_mock_key",
         amount: order.amount,
-        currency: order.currency,
+        currency: order.currency as any,
         name: "VoxMind Premium",
         description: "30 Days Unlimited Access",
         order_id: order.orderId,

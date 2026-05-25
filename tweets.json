@@ -13,6 +13,20 @@
   },
   "tweets": [
     {
+      "id": "1779712000676",
+      "content": "Built a payment system for VoxMind, my AI-powered public speaking trainer. Now users can upgrade to premium and unlock more features to help them rebuild speaking confidence. One step closer to making public speaking practice accessible to all!\" #VoxMind",
+      "source": "commit",
+      "sourceDetail": "added payment",
+      "createdAt": "2026-05-25T12:26:40.676Z",
+      "publish": false,
+      "scheduledAt": null,
+      "tags": [
+        "buildinpublic",
+        "coding"
+      ],
+      "characterCount": 254
+    },
+    {
       "id": "1779711986061",
       "content": "Realized users needed a way to unlock advanced VoxMind features without breaking the bank. Just added payments, so users can upgrade their public speaking training and start crushing their goals - no more free-trial workarounds #publicspeaking",
       "source": "commit",
