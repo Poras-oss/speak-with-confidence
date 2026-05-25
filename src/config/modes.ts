@@ -34,10 +34,11 @@ export const MODES: ModeConfig[] = [
   {
     id: "gd",
     name: "Group Discussion",
-    short: "GD Prep",
+    short: "Coming Soon",
     description: "Take a position on a statement. Argue with structure.",
     difficulty: "Challenging",
     icon: "❖",
+    comingSoon: true,
     defaultDuration: 90,
   },
   { id: "debate", name: "Debate", short: "Coming Soon", description: "Defend a side under pressure.", difficulty: "Challenging", icon: "✧", comingSoon: true, defaultDuration: 90 },

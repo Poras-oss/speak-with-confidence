@@ -99,6 +99,19 @@ export function SettingsDrawer({ open, onClose }: Props) {
             </select>
           </Section>
 
+          <Section title="Extempore interests">
+            <input
+              type="text"
+              value={settings.extemporeInterests}
+              onChange={(e) => setSettings({ extemporeInterests: e.target.value })}
+              placeholder="e.g. Philosophy, Tech, Current Events"
+              className="w-full bg-input/60 border border-border rounded-lg px-3 py-2.5 text-sm text-warm placeholder:text-warm-muted/50 focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <div className="mt-2 text-xs text-warm-muted">
+              Leave blank for completely random topics.
+            </div>
+          </Section>
+
           <Section title="Speech recognition engine">
             <Segmented
               value={settings.sttEngine}

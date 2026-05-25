@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+import { useUser } from "@clerk/clerk-react";
+import { getUserProfile, incrementExtemporeCount, type UserProfile } from "@/utils/supabase";
 import type { FeedbackPayload } from "./useGroqAI";
 import type { Difficulty, Domain, ModeId } from "@/config/modes";
 
@@ -28,6 +30,7 @@ export interface Settings {
   revealIdeal: boolean;
   sttEngine: STTEngine;
   whisperModel: WhisperModelId;
+  extemporeInterests: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -39,6 +42,7 @@ export const DEFAULT_SETTINGS: Settings = {
   revealIdeal: true,
   sttEngine: "groq",
   whisperModel: "base",
+  extemporeInterests: "",
 };
 
 export interface SessionRecord {
@@ -163,4 +167,48 @@ export function useResume() {
     }
   }, []);
   return { resume, setResume };
+}
+
+export function useUserProfile() {
+  const { user, isLoaded } = useUser();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!user) {
+      const localId = read<string>("voxmind:anonId", "");
+      let activeId = localId;
+      if (!activeId && typeof window !== "undefined") {
+        activeId = crypto.randomUUID();
+        localStorage.setItem("voxmind:anonId", JSON.stringify(activeId));
+      }
+      getUserProfile(activeId).then((p) => {
+        setProfile(p);
+        setLoading(false);
+      });
+      return;
+    }
+
+    getUserProfile(user.id).then((p) => {
+      setProfile(p);
+      setLoading(false);
+    });
+  }, [user, isLoaded]);
+
+  const incrementUsage = useCallback(async () => {
+    const id = user?.id || read<string>("voxmind:anonId", "");
+    if (!id) return;
+    const p = await incrementExtemporeCount(id);
+    setProfile(p);
+  }, [user]);
+
+  const refreshProfile = useCallback(async () => {
+    const id = user?.id || read<string>("voxmind:anonId", "");
+    if (!id) return;
+    const p = await getUserProfile(id);
+    setProfile(p);
+  }, [user]);
+
+  return { profile, loading, incrementUsage, refreshProfile, userId: user?.id };
 }

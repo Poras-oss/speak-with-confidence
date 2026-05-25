@@ -10,6 +10,7 @@ export interface FeedbackPayload {
   nailed: string[];
   improve: string[];
   ideal_framework: string[];
+  improved_response: string;
   reframe: string;
 }
 
@@ -104,6 +105,7 @@ function normalizeFeedback(obj: any): FeedbackPayload {
     nailed: Array.isArray(obj?.nailed) ? obj.nailed.slice(0, 4).map(String) : [],
     improve: Array.isArray(obj?.improve) ? obj.improve.slice(0, 4).map(String) : [],
     ideal_framework: Array.isArray(obj?.ideal_framework) ? obj.ideal_framework.slice(0, 8).map(String) : [],
+    improved_response: typeof obj?.improved_response === "string" ? obj.improved_response : "Keep practicing to formulate a stronger response.",
     reframe: typeof obj?.reframe === "string" ? obj.reframe : "Every rep counts. Try again.",
   };
 }
@@ -118,6 +120,7 @@ function fallbackFeedback(): FeedbackPayload {
       "Give 2–3 supporting reasons or examples.",
       "Close with the takeaway or a confident summary.",
     ],
+    improved_response: "The model hiccuped — your effort still counts. We cannot generate an improved response right now.",
     reframe: "The model hiccuped — your effort still counts. Try once more.",
   };
 }

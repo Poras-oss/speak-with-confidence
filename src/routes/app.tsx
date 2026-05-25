@@ -5,8 +5,9 @@ import { SessionScreen } from "@/components/SessionScreen";
 import { FeedbackScreen } from "@/components/FeedbackScreen";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { HistoryDrawer } from "@/components/HistoryDrawer";
+import { PremiumModal } from "@/components/PremiumModal";
 import { MODES, type ModeId } from "@/config/modes";
-import { useSettings, useSessions, useStreak, useResume } from "@/hooks/useSessionStore";
+import { useSettings, useSessions, useStreak, useResume, useApiKey, useUserProfile } from "@/hooks/useSessionStore";
 import { generateText, generateFeedback, type FeedbackPayload } from "@/hooks/useGroqAI";
 import { loadWhisper, type WhisperLoadProgress } from "@/hooks/useWhisperSTT";
 import {
@@ -44,6 +45,9 @@ function VoxMindApp() {
     setHydrated(true);
   }, []);
 
+  const { apiKey } = useApiKey();
+  const { profile, loading: profileLoading, incrementUsage, refreshProfile, userId } = useUserProfile();
+
   const { settings } = useSettings();
   const { sessions, addSession } = useSessions();
   const { streak, bump } = useStreak();
@@ -52,6 +56,7 @@ function VoxMindApp() {
   const [screen, setScreen] = useState<Screen>("home");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [premiumOpen, setPremiumOpen] = useState(false);
 
   const [activeMode, setActiveMode] = useState<ModeId | null>(null);
   const [question, setQuestion] = useState("");
@@ -93,9 +98,9 @@ function VoxMindApp() {
       try {
         let prompt = "";
         if (mode === "technical") prompt = technicalQuestionPrompt(settings.difficulty, settings.domain, resume?.text);
-        else if (mode === "extempore") prompt = extemporeTopicPrompt();
+        else if (mode === "extempore") prompt = extemporeTopicPrompt(settings.extemporeInterests);
         else prompt = gdTopicPrompt();
-        const q = await generateText("", prompt);
+        const q = await generateText(apiKey, prompt);
         setQuestion(q);
       } catch (e: any) {
         setQuestionError("Couldn't fetch a question. Try again.");
@@ -103,11 +108,27 @@ function VoxMindApp() {
         setQuestionLoading(false);
       }
     },
-    [settings.difficulty, settings.domain, resume?.text]
+    [settings.difficulty, settings.domain, settings.extemporeInterests, resume?.text, apiKey]
   );
 
   const startMode = useCallback(
     (mode: ModeId) => {
+      const isPremium = profile?.plan === "premium";
+      const hasCustomKey = !!apiKey;
+
+      if (!isPremium && !hasCustomKey) {
+        if (mode === "extempore") {
+          if ((profile?.extempore_count || 0) >= 5) {
+            setPremiumOpen(true);
+            return;
+          }
+          incrementUsage();
+        } else if (mode === "technical" && resume) {
+          setPremiumOpen(true);
+          return;
+        }
+      }
+
       setActiveMode(mode);
       setTranscript("");
       setFeedback(null);
@@ -115,7 +136,7 @@ function VoxMindApp() {
       setScreen("session");
       fetchQuestion(mode);
     },
-    [fetchQuestion]
+    [fetchQuestion, profile, apiKey, incrementUsage, resume]
   );
 
   const finishSession = useCallback(
@@ -127,7 +148,7 @@ function VoxMindApp() {
       setFeedbackError(null);
       setFeedbackLoading(true);
       try {
-        const fb = await generateFeedback("", feedbackPrompt(question, t, activeMode || "extempore", activeMode === "technical" ? resume?.text : undefined));
+        const fb = await generateFeedback(apiKey, feedbackPrompt(question, t, activeMode || "extempore", activeMode === "technical" ? resume?.text : undefined));
         setFeedback(fb);
         bump();
         addSession({
@@ -145,7 +166,7 @@ function VoxMindApp() {
         setFeedbackLoading(false);
       }
     },
-    [question, activeMode, addSession, bump, resume?.text]
+    [question, activeMode, addSession, bump, resume?.text, apiKey]
   );
 
   const retryFeedback = useCallback(async () => {
@@ -153,14 +174,14 @@ function VoxMindApp() {
     setFeedbackError(null);
     setFeedbackLoading(true);
     try {
-      const fb = await generateFeedback("", feedbackPrompt(question, transcript, activeMode, activeMode === "technical" ? resume?.text : undefined));
+      const fb = await generateFeedback(apiKey, feedbackPrompt(question, transcript, activeMode, activeMode === "technical" ? resume?.text : undefined));
       setFeedback(fb);
     } catch {
       setFeedbackError("Still no luck. Check your network or try again.");
     } finally {
       setFeedbackLoading(false);
     }
-  }, [question, transcript, activeMode, resume?.text]);
+  }, [question, transcript, activeMode, resume?.text, apiKey]);
 
   const tryAgain = useCallback(() => {
     setTranscript("");
@@ -205,7 +226,15 @@ function VoxMindApp() {
           streak={streak}
           totalSessions={sessions.length}
           resume={resume}
-          onResumeChange={setResume}
+          onResumeChange={(r) => {
+            const isPremium = profile?.plan === "premium";
+            const hasCustomKey = !!apiKey;
+            if (r && !isPremium && !hasCustomKey) {
+              setPremiumOpen(true);
+              return;
+            }
+            setResume(r);
+          }}
           modelReady={modelReady}
           modelStatus={modelStatus}
         />
@@ -243,6 +272,12 @@ function VoxMindApp() {
 
       <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <HistoryDrawer open={historyOpen} sessions={sessions} onClose={() => setHistoryOpen(false)} />
+      <PremiumModal
+        open={premiumOpen}
+        onClose={() => setPremiumOpen(false)}
+        userId={userId}
+        onSuccess={refreshProfile}
+      />
       {/* Reference durationActual to silence unused warnings */}
       <span hidden>{durationActual}</span>
     </>

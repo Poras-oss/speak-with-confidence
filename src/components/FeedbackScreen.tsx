@@ -144,6 +144,14 @@ export function FeedbackScreen({
                 </ol>
               </Section>
 
+              <Section title="Improved Version" tone="success">
+                <div className="bg-card/50 p-4 rounded-xl border border-border/50">
+                  <p className="text-[15px] leading-relaxed text-warm italic">
+                    "{feedback.improved_response}"
+                  </p>
+                </div>
+              </Section>
+
               <div
                 className="rounded-2xl p-6 border"
                 style={{

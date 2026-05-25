@@ -1,0 +1,30 @@
+{
+  "_comment": "DevTweet - Set publish: true and scheduledAt to queue your tweets",
+  "_schema": {
+    "id": "Unique tweet ID",
+    "content": "Tweet text (max 280 chars)",
+    "source": "Where this tweet was generated from: commit | diff | daily | manual",
+    "sourceDetail": "Human-readable source description",
+    "createdAt": "ISO timestamp when generated",
+    "publish": "Set to true to mark for publishing",
+    "scheduledAt": "Optional ISO datetime to schedule: '2024-01-15T09:00:00Z'",
+    "publishedAt": "Filled when actually published",
+    "tags": "Relevant tags for organization"
+  },
+  "tweets": [
+    {
+      "id": "1779711986061",
+      "content": "Realized users needed a way to unlock advanced VoxMind features without breaking the bank. Just added payments, so users can upgrade their public speaking training and start crushing their goals - no more free-trial workarounds #publicspeaking",
+      "source": "commit",
+      "sourceDetail": "added payments",
+      "createdAt": "2026-05-25T12:26:26.061Z",
+      "publish": false,
+      "scheduledAt": null,
+      "tags": [
+        "buildinpublic",
+        "coding"
+      ],
+      "characterCount": 243
+    }
+  ]
+}

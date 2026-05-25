@@ -13,8 +13,11 @@ ${trimmed}
   return `You are a senior technical interviewer. Generate 1 interview question for a ${level} software engineer about ${domain}. Return ONLY the question, nothing else. The question should be specific, not vague. No preamble.`;
 }
 
-export function extemporeTopicPrompt() {
-  return `Generate ONE thought-provoking extempore speaking topic. It can be an opinion, hypothetical, current-events angle, or general knowledge prompt. Return ONLY the topic as a single sentence or question. No preamble, no quotes.`;
+export function extemporeTopicPrompt(interests?: string) {
+  const interestsBlock = interests && interests.trim().length > 0
+    ? ` The topic should be related to one of the following interests: ${interests}.`
+    : "";
+  return `Generate ONE thought-provoking extempore speaking topic.${interestsBlock} It can be an opinion, hypothetical, current-events angle, or general knowledge prompt. Return ONLY the topic as a single sentence or question. No preamble, no quotes.`;
 }
 
 export function gdTopicPrompt() {
@@ -52,6 +55,7 @@ Respond in EXACTLY this JSON format (no markdown, no prose outside JSON):
   "nailed": ["specific thing they actually did well — quote or paraphrase from their answer. If nothing, return an empty array."],
   "improve": ["specific weakness with a specific fix. Be direct. e.g. 'You never defined the term — open with a 1-line definition.' Not 'try to be clearer'."],
   "ideal_framework": ["Concrete bullet of what a strong answer would cover", "Next bullet", "Next bullet"],
+  "improved_response": "A polished, well-structured 2-3 sentence version of what they were trying to say. If they said nothing, provide a strong sample opening.",
   "reframe": "ONE blunt but constructive sentence. Acknowledge reality, name the gap, point to the next rep. No fluff."
 }
 
