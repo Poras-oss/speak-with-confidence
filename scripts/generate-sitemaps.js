@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const BASE_URL = process.env.VITE_APP_URL || 'https://voxmind.app';
+const BASE_URL = process.env.VITE_APP_URL || 'https://voxmind.space';
 const URLS_PER_SITEMAP = 40000;
 
 const dataPath = path.resolve(process.cwd(), 'public', 'pseo-data.json');

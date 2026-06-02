@@ -13,6 +13,20 @@
   },
   "tweets": [
     {
+      "id": "1779729928346",
+      "content": "VoxMind just got a visibility boost. I added package-level SEO (pSEO) to improve discoverability for users searching for public speaking training tools. Now, those who struggle to find words can find VoxMind more easily.\" #publicspeaking",
+      "source": "commit",
+      "sourceDetail": "added pSEO",
+      "createdAt": "2026-05-25T17:25:28.346Z",
+      "publish": false,
+      "scheduledAt": null,
+      "tags": [
+        "buildinpublic",
+        "coding"
+      ],
+      "characterCount": 237
+    },
+    {
       "id": "1779729083158",
       "content": "VoxMind update: Just added live keys to our premium features, including a Razorpay integration to help users upgrade their public speaking practice sessions. Now, users can access more advanced tools to train their \"voice muscle\" and rebuild speaking confidence. #VoxMind",
       "source": "commit",
