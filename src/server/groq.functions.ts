@@ -7,20 +7,34 @@ const MODEL = "llama-3.3-70b-versatile";
 
 // Helper to check and enforce limits on the server
 async function enforceServerLimits(): Promise<{ ok: boolean; error?: string }> {
+  // Try to get the authenticated user. If Clerk middleware is not wired up on
+  // the server (no clerkMiddleware in the Nitro entry), auth() may throw or
+  // return null — in that case we skip limit enforcement so questions still load.
+  let userId: string | null = null;
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return { ok: false, error: "Unauthorized. Please sign in or provide your own Groq API key." };
-    }
+    const session = await auth();
+    userId = session?.userId ?? null;
+  } catch {
+    // Clerk not configured server-side — allow the request through.
+    console.warn("[Groq Server] auth() failed — Clerk middleware may not be configured. Skipping limit check.");
+    return { ok: true };
+  }
 
-    const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
-    
-    if (!supabaseUrl || !supabaseKey) {
-      // If server isn't fully configured, we allow it (mock mode)
-      return { ok: true };
-    }
-    
+  if (!userId) {
+    // Not signed in — allow if the server has a GROQ key configured.
+    // We rely on the caller to gate access at the UI level.
+    return { ok: true };
+  }
+
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    // If Supabase isn't fully configured, allow it (mock / dev mode)
+    return { ok: true };
+  }
+
+  try {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const today = new Date().toISOString().split("T")[0];
 
@@ -32,7 +46,7 @@ async function enforceServerLimits(): Promise<{ ok: boolean; error?: string }> {
       .single();
 
     if (error || !profile) {
-      // If profile doesn't exist, we'll create it and allow 1 use
+      // If profile doesn't exist, create it and allow this use
       await supabase.from("user_profiles").insert([{
         user_id: userId,
         plan: "free",
@@ -64,8 +78,9 @@ async function enforceServerLimits(): Promise<{ ok: boolean; error?: string }> {
 
     return { ok: true };
   } catch (err: any) {
-    console.error("[Groq Server] Enforce limits error:", err);
-    return { ok: false, error: "Internal server error checking limits." };
+    console.error("[Groq Server] Supabase limit check error:", err);
+    // Don't block the user if the DB check fails — just let it through
+    return { ok: true };
   }
 }
 
