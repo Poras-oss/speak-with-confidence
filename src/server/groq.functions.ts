@@ -1,7 +1,77 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getWebRequest } from "@tanstack/react-start/server";
+import { getAuth } from "@clerk/tanstack-react-start/server";
+import { createClient } from "@supabase/supabase-js";
 
 const BASE_URL = "https://api.groq.com/openai/v1";
 const MODEL = "llama-3.3-70b-versatile";
+
+// Helper to check and enforce limits on the server
+async function enforceServerLimits(): Promise<{ ok: boolean; error?: string }> {
+  const req = getWebRequest();
+  if (!req) return { ok: false, error: "No request context" };
+  
+  try {
+    const { userId } = await getAuth(req);
+    if (!userId) {
+      return { ok: false, error: "Unauthorized. Please sign in or provide your own Groq API key." };
+    }
+
+    const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) {
+      // If server isn't fully configured, we allow it (mock mode)
+      return { ok: true };
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const today = new Date().toISOString().split("T")[0];
+
+    // Fetch user profile
+    const { data: profile, error } = await supabase
+      .from("user_profiles")
+      .select("*")
+      .eq("user_id", userId)
+      .single();
+
+    if (error || !profile) {
+      // If profile doesn't exist, we'll create it and allow 1 use
+      await supabase.from("user_profiles").insert([{
+        user_id: userId,
+        plan: "free",
+        extempore_count: 1,
+        last_extempore_date: today,
+      }]);
+      return { ok: true };
+    }
+
+    if (profile.plan === "premium") {
+      return { ok: true };
+    }
+
+    // Reset daily count if it's a new day
+    let currentCount = profile.extempore_count;
+    if (profile.last_extempore_date !== today) {
+      currentCount = 0;
+    }
+
+    if (currentCount >= 5) {
+      return { ok: false, error: "Daily free limit reached. Upgrade to Premium or use your own API key." };
+    }
+
+    // Increment count
+    await supabase
+      .from("user_profiles")
+      .update({ extempore_count: currentCount + 1, last_extempore_date: today })
+      .eq("user_id", userId);
+
+    return { ok: true };
+  } catch (err: any) {
+    console.error("[Groq Server] Enforce limits error:", err);
+    return { ok: false, error: "Internal server error checking limits." };
+  }
+}
 
 interface ChatInput {
   prompt: string;
@@ -24,7 +94,17 @@ export const groqChat = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }) => {
-    const apiKey = data.apiKeyOverride || process.env.GROQ_API_KEY;
+    let apiKey = data.apiKeyOverride;
+    
+    if (!apiKey) {
+      // If no override, check server limits and use server key
+      const limitCheck = await enforceServerLimits();
+      if (!limitCheck.ok) {
+        return { ok: false as const, error: limitCheck.error || "Limit exceeded", content: "" };
+      }
+      apiKey = process.env.GROQ_API_KEY;
+    }
+
     if (!apiKey) {
       return { ok: false as const, error: "GROQ_API_KEY not configured on server.", content: "" };
     }
@@ -71,7 +151,17 @@ export const groqTranscribe = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }) => {
-    const apiKey = data.apiKeyOverride || process.env.GROQ_API_KEY;
+    let apiKey = data.apiKeyOverride;
+    
+    if (!apiKey) {
+      // If no override, check server limits and use server key
+      const limitCheck = await enforceServerLimits();
+      if (!limitCheck.ok) {
+        return { ok: false as const, error: limitCheck.error || "Limit exceeded", text: "" };
+      }
+      apiKey = process.env.GROQ_API_KEY;
+    }
+
     if (!apiKey) {
       return { ok: false as const, error: "GROQ_API_KEY not configured on server.", text: "" };
     }

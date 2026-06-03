@@ -13,6 +13,21 @@
   },
   "tweets": [
     {
+      "id": "1780397349164",
+      "content": "Struggling to find the right words in public speaking? I'm working on VoxMind, an AI-powered trainer that helps you build confidence through practice. Just fixed a domain URL issue to improve discoverability for users - one step closer to helping them find their voice\" #public...",
+      "source": "commit",
+      "sourceDetail": "fixed domain url pointing",
+      "createdAt": "2026-06-02T10:49:09.164Z",
+      "publish": false,
+      "scheduledAt": null,
+      "tags": [
+        "buildinpublic",
+        "coding",
+        "bugfix"
+      ],
+      "characterCount": 280
+    },
+    {
       "id": "1779729928346",
       "content": "VoxMind just got a visibility boost. I added package-level SEO (pSEO) to improve discoverability for users searching for public speaking training tools. Now, those who struggle to find words can find VoxMind more easily.\" #publicspeaking",
       "source": "commit",

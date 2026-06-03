@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createRazorpayOrderEdge, upgradeToPremium } from "@/utils/supabase";
+import { createRazorpayOrderEdge } from "@/utils/supabase";
 import { useRazorpay } from "react-razorpay";
 
 interface Props {
@@ -40,10 +40,11 @@ export function PremiumModal({ open, onClose, userId, onSuccess }: Props) {
         order_id: order.orderId,
         handler: async (response: any) => {
           console.log("[Razorpay] Payment success:", response);
-          // Update profile locally/Supabase
-          await upgradeToPremium(userId);
-          onSuccess?.();
-          onClose();
+          // Allow Razorpay Webhook a moment to securely update the database
+          setTimeout(() => {
+            onSuccess?.();
+            onClose();
+          }, 2500);
         },
         prefill: {
           name: "VoxMind Speaker",

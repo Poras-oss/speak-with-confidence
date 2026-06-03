@@ -80,59 +80,18 @@ export async function getUserProfile(userId: string): Promise<UserProfile> {
 }
 
 export async function incrementExtemporeCount(userId: string): Promise<UserProfile> {
-  const today = new Date().toISOString().split("T")[0];
-
+  const profile = await getUserProfile(userId);
+  const newCount = profile.extempore_count + 1;
+  
   if (isMock) {
-    const profile = await getUserProfile(userId);
-    profile.extempore_count += 1;
-    mockProfiles[userId] = profile;
-    return { ...profile };
+    mockProfiles[userId] = { ...profile, extempore_count: newCount };
   }
-
-  try {
-    const profile = await getUserProfile(userId);
-    const newCount = profile.extempore_count + 1;
-    const { data, error } = await supabase
-      .from("user_profiles")
-      .update({ extempore_count: newCount, last_extempore_date: today })
-      .eq("user_id", userId)
-      .select()
-      .single();
-
-    if (error || !data) {
-      return { ...profile, extempore_count: newCount };
-    }
-    return data;
-  } catch (err) {
-    console.error("[Supabase] Error incrementing count:", err);
-    return { user_id: userId, plan: "free", extempore_count: 1, last_extempore_date: today };
-  }
+  
+  // Note: The actual database update is now securely handled on the backend
+  // inside the Groq server functions. This just updates the UI optimistically.
+  return { ...profile, extempore_count: newCount };
 }
 
-export async function upgradeToPremium(userId: string): Promise<void> {
-  if (isMock) {
-    if (mockProfiles[userId]) {
-      mockProfiles[userId].plan = "premium";
-    } else {
-      mockProfiles[userId] = {
-        user_id: userId,
-        plan: "premium",
-        extempore_count: 0,
-        last_extempore_date: new Date().toISOString().split("T")[0],
-      };
-    }
-    return;
-  }
-
-  try {
-    await supabase
-      .from("user_profiles")
-      .update({ plan: "premium" })
-      .eq("user_id", userId);
-  } catch (err) {
-    console.error("[Supabase] Error upgrading to premium:", err);
-  }
-}
 
 export async function createRazorpayOrderEdge(userId: string): Promise<{ orderId: string; amount: number; currency: string }> {
   if (isMock) {
