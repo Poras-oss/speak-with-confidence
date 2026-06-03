@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getWebRequest } from "@tanstack/react-start/server";
+import { getRequest } from "@tanstack/react-start/server";
 import { getAuth } from "@clerk/tanstack-react-start/server";
 import { createClient } from "@supabase/supabase-js";
 
@@ -8,7 +8,7 @@ const MODEL = "llama-3.3-70b-versatile";
 
 // Helper to check and enforce limits on the server
 async function enforceServerLimits(): Promise<{ ok: boolean; error?: string }> {
-  const req = getWebRequest();
+  const req = getRequest();
   if (!req) return { ok: false, error: "No request context" };
   
   try {

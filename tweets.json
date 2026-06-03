@@ -13,6 +13,21 @@
   },
   "tweets": [
     {
+      "id": "1780492519780",
+      "content": "VoxMind's mission to help people overcome public speaking anxiety just got a boost. Fixed some vulnerabilities in our codebase, ensuring users can practice with confidence, without worrying about their data. Your voice is a muscle, and it's safer to train now.\" #publicspeaking",
+      "source": "commit",
+      "sourceDetail": "fixed some vulnerablities",
+      "createdAt": "2026-06-03T13:15:19.780Z",
+      "publish": false,
+      "scheduledAt": null,
+      "tags": [
+        "buildinpublic",
+        "coding",
+        "bugfix"
+      ],
+      "characterCount": 277
+    },
+    {
       "id": "1780397349164",
       "content": "Struggling to find the right words in public speaking? I'm working on VoxMind, an AI-powered trainer that helps you build confidence through practice. Just fixed a domain URL issue to improve discoverability for users - one step closer to helping them find their voice\" #public...",
       "source": "commit",
