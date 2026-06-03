@@ -13,6 +13,21 @@
   },
   "tweets": [
     {
+      "id": "1780493271077",
+      "content": "Debugging a build issue on VoxMind, my AI-powered public speaking trainer, to help users get instant feedback on their speech structure, clarity, and completeness. Fixed a snag in the Groq functions, now users can practice speaking with confidence again. #VoxMind",
+      "source": "commit",
+      "sourceDetail": "try fixing build",
+      "createdAt": "2026-06-03T13:27:51.077Z",
+      "publish": false,
+      "scheduledAt": null,
+      "tags": [
+        "buildinpublic",
+        "coding",
+        "bugfix"
+      ],
+      "characterCount": 263
+    },
+    {
       "id": "1780492519780",
       "content": "VoxMind's mission to help people overcome public speaking anxiety just got a boost. Fixed some vulnerabilities in our codebase, ensuring users can practice with confidence, without worrying about their data. Your voice is a muscle, and it's safer to train now.\" #publicspeaking",
       "source": "commit",

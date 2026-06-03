@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
-import { getAuth } from "@clerk/tanstack-react-start/server";
+import { auth } from "@clerk/tanstack-react-start/server";
 import { createClient } from "@supabase/supabase-js";
 
 const BASE_URL = "https://api.groq.com/openai/v1";
@@ -8,11 +7,8 @@ const MODEL = "llama-3.3-70b-versatile";
 
 // Helper to check and enforce limits on the server
 async function enforceServerLimits(): Promise<{ ok: boolean; error?: string }> {
-  const req = getRequest();
-  if (!req) return { ok: false, error: "No request context" };
-  
   try {
-    const { userId } = await getAuth(req);
+    const { userId } = await auth();
     if (!userId) {
       return { ok: false, error: "Unauthorized. Please sign in or provide your own Groq API key." };
     }
