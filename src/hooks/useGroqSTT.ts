@@ -240,8 +240,16 @@ export function useGroqSTT(): UseWhisperResult {
           noiseSuppression: true,
         },
       });
-    } catch {
-      setError("Microphone access was blocked. Allow it in your browser to begin.");
+    } catch (err: any) {
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setError("Microphone access was blocked. Allow it in your browser to begin.");
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        setError("No microphone found. Please connect a microphone and try again.");
+      } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+        setError("Microphone is already in use by another application or cannot be accessed.");
+      } else {
+        setError("Microphone error: " + (err?.message || err?.name || "unknown error"));
+      }
       return;
     }
     streamRef.current = stream;

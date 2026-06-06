@@ -1,8 +1,15 @@
-import { useState } from "react";
+import { useState, useRef, KeyboardEvent } from "react";
 import { DOMAINS, DURATIONS, type Domain, type Difficulty } from "@/config/modes";
 import { useApiKey, useSettings, useSessions, type WhisperModelId } from "@/hooks/useSessionStore";
 import { testApiKey } from "@/hooks/useGroqAI";
 import { loadWhisper, type WhisperLoadProgress } from "@/hooks/useWhisperSTT";
+
+const PRESET_INTERESTS = [
+  "Philosophy", "Technology", "Current Affairs", "Science", "Sports",
+  "Business", "History", "Psychology", "Cinema", "Health",
+  "Career", "Politics", "Space", "Environment", "Art",
+  "Economics", "Literature", "Travel",
+];
 
 interface Props {
   open: boolean;
@@ -100,16 +107,10 @@ export function SettingsDrawer({ open, onClose }: Props) {
           </Section>
 
           <Section title="Extempore interests">
-            <input
-              type="text"
+            <InterestTagPicker
               value={settings.extemporeInterests}
-              onChange={(e) => setSettings({ extemporeInterests: e.target.value })}
-              placeholder="e.g. Philosophy, Tech, Current Events"
-              className="w-full bg-input/60 border border-border rounded-lg px-3 py-2.5 text-sm text-warm placeholder:text-warm-muted/50 focus:outline-none focus:ring-2 focus:ring-ring"
+              onChange={(v) => setSettings({ extemporeInterests: v })}
             />
-            <div className="mt-2 text-xs text-warm-muted">
-              Leave blank for completely random topics.
-            </div>
           </Section>
 
           <Section title="Speech recognition engine">
@@ -264,5 +265,134 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
         />
       </span>
     </button>
+  );
+}
+
+function InterestTagPicker({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [draft, setDraft] = useState("");
+
+  // Parse the comma-separated string into a set
+  const selected = new Set(
+    value
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
+  );
+
+  const toggle = (tag: string) => {
+    const next = new Set(selected);
+    if (next.has(tag)) next.delete(tag);
+    else next.add(tag);
+    onChange([...next].join(", "));
+  };
+
+  const addCustom = () => {
+    const tag = draft.trim();
+    if (!tag) return;
+    const next = new Set(selected);
+    next.add(tag);
+    onChange([...next].join(", "));
+    setDraft("");
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addCustom();
+    } else if (e.key === "Backspace" && draft === "") {
+      // Remove the last tag on backspace in empty input
+      const tags = [...selected];
+      if (tags.length > 0) {
+        const next = new Set(selected);
+        next.delete(tags[tags.length - 1]);
+        onChange([...next].join(", "));
+      }
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Preset tags */}
+      <div className="flex flex-wrap gap-1.5">
+        {PRESET_INTERESTS.map((tag) => {
+          const active = selected.has(tag);
+          return (
+            <button
+              key={tag}
+              onClick={() => toggle(tag)}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-150 border ${
+                active
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm scale-105"
+                  : "bg-input/40 text-warm-muted border-border hover:border-primary/50 hover:text-warm"
+              }`}
+            >
+              {active && <span className="mr-1 opacity-80">✓</span>}
+              {tag}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Selected custom tags (not in presets) */}
+      {[...selected].filter((t) => !PRESET_INTERESTS.includes(t)).length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {[...selected]
+            .filter((t) => !PRESET_INTERESTS.includes(t))
+            .map((tag) => (
+              <button
+                key={tag}
+                onClick={() => toggle(tag)}
+                className="px-2.5 py-1 rounded-full text-xs font-medium bg-primary text-primary-foreground border border-primary shadow-sm transition-all"
+              >
+                ✓ {tag} ×
+              </button>
+            ))}
+        </div>
+      )}
+
+      {/* Custom input */}
+      <div className="flex gap-2">
+        <input
+          ref={inputRef}
+          type="text"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Add custom interest…"
+          className="flex-1 bg-input/60 border border-border rounded-lg px-3 py-2 text-sm text-warm placeholder:text-warm-muted/50 focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        <button
+          onClick={addCustom}
+          disabled={!draft.trim()}
+          className="px-3 py-2 bg-secondary text-warm rounded-lg text-sm hover:bg-accent transition disabled:opacity-40"
+        >
+          Add
+        </button>
+      </div>
+
+      {/* Helper / clear */}
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-warm-muted">
+          {selected.size === 0
+            ? "No filter — fully random topics each session."
+            : `${selected.size} interest${selected.size > 1 ? "s" : ""} active — questions will rotate through them.`}
+        </p>
+        {selected.size > 0 && (
+          <button
+            onClick={() => onChange("")}
+            className="text-xs text-warm-muted hover:text-destructive transition ml-3 shrink-0"
+          >
+            Clear all
+          </button>
+        )}
+      </div>
+    </div>
   );
 }

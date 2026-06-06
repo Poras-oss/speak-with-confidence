@@ -13,11 +13,59 @@ ${trimmed}
   return `You are a senior technical interviewer. Generate 1 interview question for a ${level} software engineer about ${domain}. Return ONLY the question, nothing else. The question should be specific, not vague. No preamble.`;
 }
 
+// Topic categories and framing angles for variety rotation
+const TOPIC_CATEGORIES = [
+  "philosophy and ethics",
+  "science and technology",
+  "human psychology",
+  "society and culture",
+  "history and lessons from the past",
+  "the future and speculative thinking",
+  "personal growth and habits",
+  "leadership and decision-making",
+  "environment and sustainability",
+  "economics and everyday life",
+  "art, creativity, and expression",
+  "health and well-being",
+  "relationships and communication",
+  "education and learning",
+  "politics and governance",
+  "sports and competition",
+];
+
+const FRAMING_ANGLES = [
+  "a bold opinion people can agree or disagree with",
+  "a surprising hypothetical scenario",
+  "a contrarian take on a commonly accepted idea",
+  "a dilemma with no obvious right answer",
+  "a thought experiment about human nature",
+  "a prediction about the next 10 years",
+  "a question that sounds simple but is deeply complex",
+  "a real-world observation that reveals something counterintuitive",
+  "a comparison between two seemingly unrelated things",
+  "a challenge to a widely held assumption",
+];
+
+function pickRandom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 export function extemporeTopicPrompt(interests?: string) {
-  const interestsBlock = interests && interests.trim().length > 0
-    ? ` The topic should be related to one of the following interests: ${interests}.`
-    : "";
-  return `Generate ONE thought-provoking extempore speaking topic.${interestsBlock} It can be an opinion, hypothetical, current-events angle, or general knowledge prompt. Return ONLY the topic as a single sentence or question. No preamble, no quotes.`;
+  const hasInterests = interests && interests.trim().length > 0;
+
+  if (hasInterests) {
+    // When interests are set, rotate through the interests list and pick one
+    const interestList = interests!.split(",").map((s) => s.trim()).filter(Boolean);
+    const chosenInterest = pickRandom(interestList);
+    const angle = pickRandom(FRAMING_ANGLES);
+    return `Generate ONE thought-provoking extempore speaking topic about "${chosenInterest}". Frame it as ${angle}. Return ONLY the topic as a single sentence or question. No preamble, no numbering, no quotes. Make it specific and interesting — not generic.`;
+  }
+
+  // No interests — rotate through categories + angles for maximum variety
+  const category = pickRandom(TOPIC_CATEGORIES);
+  const angle = pickRandom(FRAMING_ANGLES);
+  const seed = Math.random().toString(36).slice(2, 6); // adds entropy per call
+  return `Generate ONE unique extempore speaking topic from the domain of ${category}. Frame it as ${angle}. Variation seed: ${seed}. Return ONLY the topic as a single sentence or question. No preamble, no numbering, no quotes. Make it specific, not generic.`;
 }
 
 export function gdTopicPrompt() {

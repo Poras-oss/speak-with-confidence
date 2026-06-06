@@ -13,6 +13,21 @@
   },
   "tweets": [
     {
+      "id": "1780505401866",
+      "content": "Ever struggled to find the right words mid-sentence? I just fixed a pesky question error in VoxMind, an AI-powered public speaking trainer that helps users practice and build confidence through short, repeatable sessions. #publicspeaking",
+      "source": "commit",
+      "sourceDetail": "fix question error",
+      "createdAt": "2026-06-03T16:50:01.866Z",
+      "publish": false,
+      "scheduledAt": null,
+      "tags": [
+        "buildinpublic",
+        "coding",
+        "bugfix"
+      ],
+      "characterCount": 237
+    },
+    {
       "id": "1780494071302",
       "content": "Got stuck on a tricky build fix for VoxMind, my AI-powered public speaking trainer. Now, users can practice speaking with confidence, getting real-time feedback on structure & clarity, thanks to a tweaked Groq function & updated tweet integration. #publicspeaking",
       "source": "commit",
