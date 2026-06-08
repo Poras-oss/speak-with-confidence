@@ -18,6 +18,7 @@ interface Props {
   onPick: (mode: ModeId) => void;
   onOpenSettings: () => void;
   onOpenHistory: () => void;
+  onOpenProgress: () => void;
   streak: StreakState;
   totalSessions: number;
   resume: ResumeState | null;
@@ -26,7 +27,7 @@ interface Props {
   modelStatus: WhisperLoadProgress;
 }
 
-export function HomeScreen({ onPick, onOpenSettings, onOpenHistory, streak, totalSessions, resume, onResumeChange, modelReady, modelStatus }: Props) {
+export function HomeScreen({ onPick, onOpenSettings, onOpenHistory, onOpenProgress, streak, totalSessions, resume, onResumeChange, modelReady, modelStatus }: Props) {
   const [motiv, setMotiv] = useState(MOTIVATIONS[0]);
   useEffect(() => {
     setMotiv(MOTIVATIONS[Math.floor(Math.random() * MOTIVATIONS.length)]);
@@ -38,6 +39,12 @@ export function HomeScreen({ onPick, onOpenSettings, onOpenHistory, streak, tota
       <header className="flex items-center justify-between px-6 md:px-10 py-6">
         <div className="text-warm-muted text-sm tracking-[0.25em] uppercase">VoxMind</div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={onOpenProgress}
+            className="text-xs text-warm-muted hover:text-warm transition px-3 py-1.5 rounded-lg hover:bg-accent/40"
+          >
+            Progress
+          </button>
           <button
             onClick={onOpenHistory}
             className="text-xs text-warm-muted hover:text-warm transition px-3 py-1.5 rounded-lg hover:bg-accent/40"

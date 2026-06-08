@@ -5,6 +5,7 @@ import { SessionScreen } from "@/components/SessionScreen";
 import { FeedbackScreen } from "@/components/FeedbackScreen";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { HistoryDrawer } from "@/components/HistoryDrawer";
+import { ProgressDrawer } from "@/components/ProgressDrawer";
 import { PremiumModal } from "@/components/PremiumModal";
 import { MODES, type ModeId } from "@/config/modes";
 import { useSettings, useSessions, useStreak, useResume, useApiKey, useUserProfile } from "@/hooks/useSessionStore";
@@ -85,6 +86,7 @@ function VoxMindApp() {
   const [screen, setScreen] = useState<Screen>("home");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [progressOpen, setProgressOpen] = useState(false);
   const [premiumOpen, setPremiumOpen] = useState(false);
 
   const [activeMode, setActiveMode] = useState<ModeId | null>(null);
@@ -255,6 +257,7 @@ function VoxMindApp() {
           onPick={startMode}
           onOpenSettings={() => setSettingsOpen(true)}
           onOpenHistory={() => setHistoryOpen(true)}
+          onOpenProgress={() => setProgressOpen(true)}
           streak={streak}
           totalSessions={sessions.length}
           resume={resume}
@@ -302,8 +305,23 @@ function VoxMindApp() {
         />
       )}
 
-      <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
-      <HistoryDrawer open={historyOpen} sessions={sessions} onClose={() => setHistoryOpen(false)} />
+      <SettingsDrawer
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+      />
+
+      <HistoryDrawer
+        open={historyOpen}
+        sessions={sessions}
+        onClose={() => setHistoryOpen(false)}
+      />
+
+      <ProgressDrawer
+        open={progressOpen}
+        sessions={sessions}
+        onClose={() => setProgressOpen(false)}
+      />
+
       <PremiumModal
         open={premiumOpen}
         onClose={() => setPremiumOpen(false)}

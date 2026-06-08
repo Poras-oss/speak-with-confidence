@@ -13,6 +13,21 @@
   },
   "tweets": [
     {
+      "id": "1780914558333",
+      "content": "Practicing public speaking just got a boost. I added a 'Start Speaking' button to VoxMind, my AI-powered speaking trainer, and fixed a bug that cut off sessions too early. Now, users can confidently warm up their voice and track progress with a session history. #VoxMind",
+      "source": "commit",
+      "sourceDetail": "added a start speak button with the activity history also fixed the bug to cut off session before speech get transcribed",
+      "createdAt": "2026-06-08T10:29:18.333Z",
+      "publish": false,
+      "scheduledAt": null,
+      "tags": [
+        "buildinpublic",
+        "coding",
+        "bugfix"
+      ],
+      "characterCount": 270
+    },
+    {
       "id": "1780913707632",
       "content": "Struggling to speak up in meetings or interviews? I just tweaked VoxMind to help you build confidence. Simplified questions with a country context and fixed the timer to keep your practice sessions on track. Speak with clarity, one rep at a time. #publicspeaking",
       "source": "commit",
