@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-react";
-import { getUserProfile, incrementExtemporeCount, type UserProfile } from "@/utils/supabase";
+import { getUserProfile, incrementExtemporeCount, type UserProfile, fetchSessionHistory, insertSessionRecord } from "@/utils/supabase";
 import type { FeedbackPayload } from "./useGroqAI";
 import type { Difficulty, Domain, ModeId } from "@/config/modes";
 
@@ -115,22 +115,49 @@ export function useSettings() {
   return { settings, setSettings };
 }
 
-export function useSessions() {
+export function useSessions(userId?: string) {
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
+  
   useEffect(() => {
-    setSessions(read<SessionRecord[]>(KEYS.sessions, []));
-  }, []);
+    const local = read<SessionRecord[]>(KEYS.sessions, []);
+    setSessions(local);
+    
+    if (userId) {
+      fetchSessionHistory(userId).then((history) => {
+        if (history && history.length > 0) {
+          const remoteSessions: SessionRecord[] = history.map((h) => ({
+            id: h.id,
+            date: Number(h.date),
+            mode: h.mode,
+            question: h.question,
+            transcript: h.transcript,
+            durationSec: h.duration_sec,
+            feedback: h.feedback,
+          }));
+          setSessions(remoteSessions);
+          write(KEYS.sessions, remoteSessions);
+        }
+      });
+    }
+  }, [userId]);
+
   const addSession = useCallback((s: SessionRecord) => {
     setSessions((prev) => {
       const next = [s, ...prev].slice(0, 200);
       write(KEYS.sessions, next);
       return next;
     });
-  }, []);
+
+    if (userId) {
+      insertSessionRecord(userId, s);
+    }
+  }, [userId]);
+
   const clearSessions = useCallback(() => {
     setSessions([]);
     write(KEYS.sessions, []);
   }, []);
+  
   return { sessions, addSession, clearSessions };
 }
 

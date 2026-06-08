@@ -36,14 +36,13 @@ export function SessionScreen({
   const finishedRef = useRef(false);
   const startedAtRef = useRef<number | null>(null);
 
-  // Auto-start once question is loaded
-  useEffect(() => {
-    if (!questionLoading && question && !started && sr.supported) {
+  const startRecording = useCallback(() => {
+    if (!started && sr.supported && question && !questionLoading) {
       setStarted(true);
       startedAtRef.current = Date.now();
       sr.start();
     }
-  }, [questionLoading, question, started, sr]);
+  }, [started, sr, question, questionLoading]);
 
   const latestTranscriptRef = useRef("");
   const latestInterimRef = useRef("");
@@ -82,6 +81,8 @@ export function SessionScreen({
     handleFinishRef.current = handleFinish;
   }, [handleFinish]);
 
+  const [timeUp, setTimeUp] = useState(false);
+
   // Timer
   useEffect(() => {
     if (!started) return;
@@ -89,14 +90,20 @@ export function SessionScreen({
       setElapsed((e) => {
         const next = e + 1;
         if (next >= latestDurationRef.current && !finishedRef.current) {
-          // Trigger finish outside of setElapsed to avoid state update loops
-          setTimeout(() => handleFinishRef.current(), 0);
+          setTimeUp(true);
         }
         return next;
       });
     }, 1000);
     return () => clearInterval(t);
   }, [started]);
+
+  // Auto finish when time is up AND they stop speaking
+  useEffect(() => {
+    if (timeUp && !finishedRef.current && !sr.isVoiceActive) {
+      handleFinishRef.current();
+    }
+  }, [timeUp, sr.isVoiceActive]);
 
   // Spacebar shortcut
   useEffect(() => {
@@ -184,18 +191,32 @@ export function SessionScreen({
             >
               Skip / New question
             </button>
-            <button
-              onClick={handleFinish}
-              disabled={!started || finishing}
-              className="px-8 py-3.5 rounded-xl font-medium text-base transition-all hover:scale-[1.02] disabled:opacity-50"
-              style={{
-                background: "color-mix(in oklab, var(--color-destructive) 85%, black)",
-                color: "var(--color-destructive-foreground)",
-                boxShadow: "0 0 0 1px color-mix(in oklab, var(--color-destructive) 50%, transparent), 0 8px 32px -12px color-mix(in oklab, var(--color-destructive) 60%, transparent)",
-              }}
-            >
-              {finishing ? "FINISHING..." : "STOP & GET FEEDBACK"}
-            </button>
+            {!started ? (
+              <button
+                onClick={startRecording}
+                disabled={questionLoading || !question}
+                className="px-8 py-3.5 rounded-xl font-medium text-base transition-all hover:scale-[1.02] disabled:opacity-50"
+                style={{
+                  background: "var(--color-accent)",
+                  color: "var(--color-canvas)",
+                }}
+              >
+                BEGIN SPEAKING
+              </button>
+            ) : (
+              <button
+                onClick={handleFinish}
+                disabled={!started || finishing}
+                className="px-8 py-3.5 rounded-xl font-medium text-base transition-all hover:scale-[1.02] disabled:opacity-50"
+                style={{
+                  background: "color-mix(in oklab, var(--color-destructive) 85%, black)",
+                  color: "var(--color-destructive-foreground)",
+                  boxShadow: "0 0 0 1px color-mix(in oklab, var(--color-destructive) 50%, transparent), 0 8px 32px -12px color-mix(in oklab, var(--color-destructive) 60%, transparent)",
+                }}
+              >
+                {finishing ? "FINISHING..." : timeUp ? "FINISHING SENTENCE..." : "STOP & GET FEEDBACK"}
+              </button>
+            )}
             <button
               onClick={onExit}
               className="text-sm text-warm-muted hover:text-warm transition px-4 py-2 rounded-lg hover:bg-accent/40"

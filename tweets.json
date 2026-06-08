@@ -13,6 +13,21 @@
   },
   "tweets": [
     {
+      "id": "1780913707632",
+      "content": "Struggling to speak up in meetings or interviews? I just tweaked VoxMind to help you build confidence. Simplified questions with a country context and fixed the timer to keep your practice sessions on track. Speak with clarity, one rep at a time. #publicspeaking",
+      "source": "commit",
+      "sourceDetail": "fixed timer and made question simplr with country context",
+      "createdAt": "2026-06-08T10:15:07.632Z",
+      "publish": false,
+      "scheduledAt": null,
+      "tags": [
+        "buildinpublic",
+        "coding",
+        "bugfix"
+      ],
+      "characterCount": 262
+    },
+    {
       "id": "1780505401866",
       "content": "Ever struggled to find the right words mid-sentence? I just fixed a pesky question error in VoxMind, an AI-powered public speaking trainer that helps users practice and build confidence through short, repeatable sessions. #publicspeaking",
       "source": "commit",

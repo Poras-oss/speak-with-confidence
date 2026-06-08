@@ -112,3 +112,61 @@ export async function createRazorpayOrderEdge(userId: string): Promise<{ orderId
 
   return data;
 }
+
+// In-memory mock for session history
+const mockSessionHistory: Record<string, any[]> = {};
+
+export async function fetchSessionHistory(userId: string): Promise<any[]> {
+  if (isMock) {
+    return mockSessionHistory[userId] || [];
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("session_history")
+      .select("*")
+      .eq("user_id", userId)
+      .order("date", { ascending: false });
+
+    if (error) {
+      console.error("[Supabase] Error fetching session history:", error);
+      return [];
+    }
+
+    return data || [];
+  } catch (err) {
+    console.error("[Supabase] Error fetching session history:", err);
+    return [];
+  }
+}
+
+export async function insertSessionRecord(userId: string, record: any): Promise<void> {
+  if (isMock) {
+    if (!mockSessionHistory[userId]) {
+      mockSessionHistory[userId] = [];
+    }
+    mockSessionHistory[userId].unshift({ ...record, user_id: userId });
+    return;
+  }
+
+  try {
+    const { error } = await supabase.from("session_history").insert([
+      {
+        id: record.id,
+        user_id: userId,
+        date: record.date,
+        mode: record.mode,
+        question: record.question,
+        transcript: record.transcript,
+        duration_sec: record.durationSec,
+        feedback: record.feedback,
+      },
+    ]);
+
+    if (error) {
+      console.error("[Supabase] Error inserting session record:", error);
+    }
+  } catch (err) {
+    console.error("[Supabase] Error inserting session record:", err);
+  }
+}

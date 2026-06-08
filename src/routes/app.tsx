@@ -78,7 +78,7 @@ function VoxMindApp() {
   const { profile, loading: profileLoading, incrementUsage, refreshProfile, userId } = useUserProfile();
 
   const { settings } = useSettings();
-  const { sessions, addSession } = useSessions();
+  const { sessions, addSession } = useSessions(userId);
   const { streak, bump } = useStreak();
   const { resume, setResume } = useResume();
 

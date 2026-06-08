@@ -120,6 +120,7 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
   const llmRef = useRef(llm);
   useEffect(() => { llmRef.current = llm; }, [llm]);
   const [listening, setListening] = useState(false);
+  const [isVoiceActive, setIsVoiceActive] = useState(false);
   const [transcript, setTranscript] = useState("");
   const transcriptRef = useRef("");
   
@@ -305,7 +306,11 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
         workletURL: "/vad.worklet.bundle.min.js",
         // Load ONNX runtime WASM from CDN to avoid Vite bundling issues
         onnxWASMBasePath: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.25.1/dist/",
+        onSpeechStart: () => {
+          setIsVoiceActive(true);
+        },
         onSpeechEnd: (audio: Float32Array) => {
+          setIsVoiceActive(false);
           if (stoppedRef.current) return;
           chunkQueueRef.current.push(audio);
           processQueue();
@@ -338,5 +343,6 @@ export function useWhisperSTT(modelId: WhisperModelId): UseWhisperResult {
     stop,
     reset,
     preload,
+    isVoiceActive,
   };
 }
