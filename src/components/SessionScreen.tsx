@@ -77,6 +77,11 @@ export function SessionScreen({
     onFinish(finalTx, elapsedSec);
   }, [sr, elapsed, onFinish]);
 
+  const handleFinishRef = useRef(handleFinish);
+  useEffect(() => {
+    handleFinishRef.current = handleFinish;
+  }, [handleFinish]);
+
   // Timer
   useEffect(() => {
     if (!started) return;
@@ -85,28 +90,26 @@ export function SessionScreen({
         const next = e + 1;
         if (next >= latestDurationRef.current && !finishedRef.current) {
           // Trigger finish outside of setElapsed to avoid state update loops
-          setTimeout(() => handleFinish(), 0);
+          setTimeout(() => handleFinishRef.current(), 0);
         }
         return next;
       });
     }, 1000);
     return () => clearInterval(t);
-  }, [started, handleFinish]);
-
-
+  }, [started]);
 
   // Spacebar shortcut
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.code === "Space" && !finishedRef.current && started) {
         e.preventDefault();
-        handleFinish();
+        handleFinishRef.current();
       }
       if (e.code === "Escape") onExit();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [started, handleFinish, onExit]);
+  }, [started, onExit]);
 
   const remaining = Math.max(0, durationSec - elapsed);
   const mins = Math.floor(remaining / 60);

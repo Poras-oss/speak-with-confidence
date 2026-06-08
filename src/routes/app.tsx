@@ -17,6 +17,35 @@ import {
   feedbackPrompt,
 } from "@/config/prompts";
 
+async function getUserCountry(): Promise<string | undefined> {
+  try {
+    return await new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        resolve(Intl.DateTimeFormat().resolvedOptions().timeZone);
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const { latitude, longitude } = position.coords;
+            const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+            const data = await res.json();
+            resolve(data.countryName || data.countryCode || Intl.DateTimeFormat().resolvedOptions().timeZone);
+          } catch (e) {
+            resolve(Intl.DateTimeFormat().resolvedOptions().timeZone);
+          }
+        },
+        () => {
+          resolve(Intl.DateTimeFormat().resolvedOptions().timeZone);
+        },
+        { timeout: 5000 }
+      );
+    });
+  } catch (e) {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }
+}
+
 export const Route = createFileRoute("/app")({
   head: () => ({
     meta: [
@@ -98,7 +127,10 @@ function VoxMindApp() {
       try {
         let prompt = "";
         if (mode === "technical") prompt = technicalQuestionPrompt(settings.difficulty, settings.domain, resume?.text);
-        else if (mode === "extempore") prompt = extemporeTopicPrompt(settings.extemporeInterests);
+        else if (mode === "extempore") {
+          const countryContext = await getUserCountry();
+          prompt = extemporeTopicPrompt(settings.extemporeInterests, countryContext);
+        }
         else prompt = gdTopicPrompt();
         const q = await generateText(apiKey, prompt);
         setQuestion(q);
