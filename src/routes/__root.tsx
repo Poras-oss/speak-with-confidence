@@ -47,6 +47,11 @@ export const Route = createRootRoute({
     ],
     links: [
       {
+        rel: "icon",
+        type: "image/svg+xml",
+        href: "/favicon.svg",
+      },
+      {
         rel: "canonical",
         href: "https://voxmind.space",
       },
@@ -66,6 +71,24 @@ function RootShell({ children }: { children: React.ReactNode }) {
     <html lang="en" className="dark">
       <head>
         <HeadContent />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: "VoxMind",
+              operatingSystem: "Web",
+              applicationCategory: "EducationalApplication",
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "USD",
+              },
+              description: "A research-backed public speaking trainer for people recovering from presentation anxiety.",
+            }),
+          }}
+        />
       </head>
       <body className="dark">
         {children}

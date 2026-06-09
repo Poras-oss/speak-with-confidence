@@ -8,17 +8,17 @@ const clerkEnabled = !!CLERK_KEY && !CLERK_KEY.includes("REPLACE_ME");
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "VoxMind — Your voice is a muscle. Train it." },
+      { title: "VoxMind — Free AI Speech Practice App | Speak Confidently & Effectively" },
       {
         name: "description",
         content:
-          "AI-powered public speaking practice. Real-time transcription, structured feedback, daily reps. Built for anyone who has ever frozen mid-sentence.",
+          "The ultimate AI speech practice tool. Master impromptu speaking, nail presentations, and prepare for exams like ACT English Practice with structured feedback.",
       },
-      { property: "og:title", content: "VoxMind — Train your voice" },
+      { property: "og:title", content: "VoxMind — AI Speech Practice App" },
       {
         property: "og:description",
         content:
-          "An AI coach that listens, transcribes, and gives honest feedback. Rebuild speaking confidence one rep at a time.",
+          "An AI speech practice app that listens, transcribes, and gives honest feedback. Rebuild speaking confidence and master impromptu speaking one rep at a time.",
       },
     ],
   }),
@@ -140,10 +140,10 @@ function Hero() {
       <Waveform />
 
       <div className="relative max-w-5xl mx-auto px-6 md:px-10 pt-24 pb-32 md:pt-36 md:pb-44 text-center">
-        <h1 className="sr-only">VoxMind - AI Public Speaking Coach for Presentation Anxiety and Glossophobia</h1>
+        <h1 className="sr-only">VoxMind - Free AI Speech Practice App for Impromptu Speaking, Presentations, and ACT English Practice</h1>
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.02] text-xs text-[#a0a0a0] mb-8 animate-fade-in">
           <span className="w-1.5 h-1.5 rounded-full bg-[#7C3AED] animate-pulse-soft" />
-          Your voice is a muscle. Train it.
+          The #1 Free AI Speech Practice App
         </div>
 
         <h1 className="text-[44px] sm:text-6xl md:text-7xl font-bold leading-[1.05] tracking-[-0.02em] text-[#F5F0E8]">
@@ -162,8 +162,7 @@ function Hero() {
           className="mt-8 text-[17px] md:text-lg text-[#a0a0a0] leading-relaxed max-w-xl mx-auto animate-fade-up"
           style={{ animationDelay: "700ms", animationFillMode: "backwards" }}
         >
-          VoxMind is an AI coach that listens to you speak, transcribes your words in real time,
-          and gives you honest, structured feedback — so the next time you're in a room, you're ready.
+          VoxMind is an AI speech practice tool that listens to you speak, transcribes your words, and gives you honest, structured feedback. Whether you are aiming for speaking confidently and effectively in meetings, mastering impromptu speaking, or even doing ACT English practice, VoxMind prepares you.
         </p>
 
         <div
@@ -343,14 +342,14 @@ function Modes() {
     {
       icon: "🎤",
       name: "Extempore",
-      body: "A random topic. You speak. No prep. Builds raw thinking-on-your-feet confidence.",
+      body: "A random topic. You speak. No prep. Builds raw thinking-on-your-feet confidence and impromptu speaking mastery.",
       badge: "All levels",
     },
     {
       icon: "💻",
       name: "Technical Explainer",
       body:
-        "DSA, system design, OOP, frontend, backend. Real interview questions. Real feedback on your technical communication.",
+        "DSA, system design, OOP, frontend, backend. Real interview questions. AI speech practice for presentations and technical communication.",
       badge: "Beginner → Advanced",
     },
     {

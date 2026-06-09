@@ -13,6 +13,20 @@
   },
   "tweets": [
     {
+      "id": "1780916040722",
+      "content": "I just added progress reports to VoxMind, my AI-powered public speaking trainer. Now, users can track their improvement over time and see how consistent practice sessions boost their speaking confidence.",
+      "source": "commit",
+      "sourceDetail": "added progress reports",
+      "createdAt": "2026-06-08T10:54:00.722Z",
+      "publish": false,
+      "scheduledAt": null,
+      "tags": [
+        "buildinpublic",
+        "coding"
+      ],
+      "characterCount": 203
+    },
+    {
       "id": "1780914558333",
       "content": "Practicing public speaking just got a boost. I added a 'Start Speaking' button to VoxMind, my AI-powered speaking trainer, and fixed a bug that cut off sessions too early. Now, users can confidently warm up their voice and track progress with a session history. #VoxMind",
       "source": "commit",

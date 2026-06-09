@@ -27,7 +27,9 @@ const actions = [
   "How to Manage Nervous Shaking", "How to Tell a Story", "How to Use Hand Gestures",
   "How to Read the Room", "How to Recover From a Mistake", "How to Speak Without Notes",
   "How to Pitch an Idea", "How to Give Constructive Feedback", "How to Disagree Professionally",
-  "How to Explain Complex Topics"
+  "How to Explain Complex Topics", "ACT English Practice", "Speaking Confidently and Effectively",
+  "Impromptu Speaking", "AI Speech Practice", "AI Speech Practice for Presentations",
+  "AI Speech Practice Tool", "Free AI Speech Practice App", "AI Speech Practice App"
 ];
 
 function slugify(text) {
