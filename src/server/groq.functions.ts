@@ -85,7 +85,8 @@ async function enforceServerLimits(): Promise<{ ok: boolean; error?: string }> {
 }
 
 interface ChatInput {
-  prompt: string;
+  prompt?: string;
+  messages?: { role: string; content: string }[];
   temperature?: number;
   max_tokens?: number;
   apiKeyOverride?: string;
@@ -93,12 +94,12 @@ interface ChatInput {
 
 export const groqChat = createServerFn({ method: "POST" })
   .inputValidator((input: ChatInput) => {
-    if (!input || typeof input.prompt !== "string" || input.prompt.length === 0) {
-      throw new Error("prompt is required");
+    if (!input || (!input.prompt && !input.messages)) {
+      throw new Error("prompt or messages is required");
     }
-    if (input.prompt.length > 8000) throw new Error("prompt too long");
     return {
       prompt: input.prompt,
+      messages: input.messages,
       temperature: typeof input.temperature === "number" ? input.temperature : 0.7,
       max_tokens: typeof input.max_tokens === "number" ? input.max_tokens : 800,
       apiKeyOverride: typeof input.apiKeyOverride === "string" ? input.apiKeyOverride : undefined,
@@ -128,7 +129,7 @@ export const groqChat = createServerFn({ method: "POST" })
         },
         body: JSON.stringify({
           model: MODEL,
-          messages: [{ role: "user", content: data.prompt }],
+          messages: data.messages || [{ role: "user", content: data.prompt }],
           temperature: data.temperature,
           max_tokens: data.max_tokens,
           stream: false,

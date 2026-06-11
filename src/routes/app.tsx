@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { HomeScreen } from "@/components/HomeScreen";
 import { SessionScreen } from "@/components/SessionScreen";
+import { ConversationScreen } from "@/components/ConversationScreen";
 import { FeedbackScreen } from "@/components/FeedbackScreen";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { HistoryDrawer } from "@/components/HistoryDrawer";
@@ -168,7 +169,9 @@ function VoxMindApp() {
       setFeedback(null);
       setFeedbackError(null);
       setScreen("session");
-      fetchQuestion(mode);
+      if (mode !== "conversation") {
+        fetchQuestion(mode);
+      }
     },
     [fetchQuestion, profile, apiKey, incrementUsage, resume]
   );
@@ -275,7 +278,7 @@ function VoxMindApp() {
         />
       )}
 
-      {screen === "session" && modeCfg && (
+      {screen === "session" && modeCfg && activeMode !== "conversation" && (
         <SessionScreen
           mode={modeCfg}
           difficultyLabel={activeMode === "technical" ? settings.difficulty : undefined}
@@ -286,6 +289,13 @@ function VoxMindApp() {
           durationSec={settings.duration}
           onFinish={finishSession}
           onSkip={skipQuestion}
+          onExit={exitToHome}
+        />
+      )}
+
+      {screen === "session" && modeCfg && activeMode === "conversation" && (
+        <ConversationScreen
+          apiKey={apiKey}
           onExit={exitToHome}
         />
       )}

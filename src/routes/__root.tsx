@@ -38,6 +38,7 @@ export const Route = createRootRoute({
         content:
           "Rebuild your voice. A research-backed trainer for people recovering from presentation anxiety.",
       },
+      { name: "keywords", content: "spoken english practice, daily english speaking practice, public speaking, interview prep, speaking anxiety" },
       { name: "author", content: "VoxMind" },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://voxmind.space" },

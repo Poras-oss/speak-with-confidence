@@ -13,6 +13,21 @@
   },
   "tweets": [
     {
+      "id": "1781173291700",
+      "content": "Squashed a pesky timing bug in VoxMind, my AI-powered public speaking trainer. Now, users can start speaking without delays. Also tweaked the \"Begin to Speak\" CTA for a smoother practice experience. Your voice is a muscle, and it's getting stronger #publicspeaking",
+      "source": "commit",
+      "sourceDetail": "fixed timing bug and the begin to speak CTA",
+      "createdAt": "2026-06-11T10:21:31.700Z",
+      "publish": false,
+      "scheduledAt": null,
+      "tags": [
+        "buildinpublic",
+        "coding",
+        "bugfix"
+      ],
+      "characterCount": 264
+    },
+    {
       "id": "1780916040722",
       "content": "I just added progress reports to VoxMind, my AI-powered public speaking trainer. Now, users can track their improvement over time and see how consistent practice sessions boost their speaking confidence.",
       "source": "commit",

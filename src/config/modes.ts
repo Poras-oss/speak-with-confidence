@@ -1,4 +1,4 @@
-export type ModeId = "extempore" | "technical" | "gd";
+export type ModeId = "extempore" | "technical" | "gd" | "conversation";
 export type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 
 export interface ModeConfig {
@@ -30,6 +30,15 @@ export const MODES: ModeConfig[] = [
     difficulty: "Core",
     icon: "◆",
     defaultDuration: 120,
+  },
+  {
+    id: "conversation",
+    name: "1-on-1 Conversation",
+    short: "Daily Practice",
+    description: "Spoken english practice. Daily english speaking practice in a low-pressure back-and-forth chat.",
+    difficulty: "Easy",
+    icon: "💬",
+    defaultDuration: 300,
   },
   {
     id: "gd",

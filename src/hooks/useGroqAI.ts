@@ -14,10 +14,11 @@ export interface FeedbackPayload {
   reframe: string;
 }
 
-async function chat(apiKey: string, prompt: string, opts?: { temperature?: number; max_tokens?: number }) {
+async function chat(apiKey: string, prompt: string | undefined, messages: { role: string; content: string }[] | undefined, opts?: { temperature?: number; max_tokens?: number }) {
   const result = await groqChat({
     data: {
       prompt,
+      messages,
       temperature: opts?.temperature ?? 0.7,
       max_tokens: opts?.max_tokens ?? 800,
       apiKeyOverride: apiKey || undefined,
@@ -30,13 +31,18 @@ async function chat(apiKey: string, prompt: string, opts?: { temperature?: numbe
 }
 
 export async function generateText(apiKey: string, prompt: string) {
-  const out = await chat(apiKey, prompt, { temperature: 0.85, max_tokens: 200 });
+  const out = await chat(apiKey, prompt, undefined, { temperature: 0.85, max_tokens: 200 });
   return out.replace(/^["']|["']$/g, "").trim();
+}
+
+export async function generateChatResponse(apiKey: string, messages: { role: string; content: string }[]) {
+  const out = await chat(apiKey, undefined, messages, { temperature: 0.7, max_tokens: 400 });
+  return out.trim();
 }
 
 export async function generateFeedback(apiKey: string, prompt: string): Promise<FeedbackPayload> {
   try {
-    const out = await chat(apiKey, prompt, { temperature: 0.4, max_tokens: 900 });
+    const out = await chat(apiKey, prompt, undefined, { temperature: 0.4, max_tokens: 900 });
     const json = extractJson(out);
     return normalizeFeedback(json);
   } catch (e) {

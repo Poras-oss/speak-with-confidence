@@ -60,6 +60,17 @@ export function extemporeTopicPrompt(interests?: string, countryContext?: string
   return `Generate ONE simple, everyday extempore speaking topic from the category of "${category}". Frame it as ${angle}.${contextInstruction} Variation seed: ${seed}. Return ONLY the topic as a single sentence or question. No preamble, no numbering, no quotes.`;
 }
 
+export function conversationSystemPrompt() {
+  return `You are an expert English language conversation coach applying evidence-based language acquisition principles (such as Krashen's Affective Filter hypothesis and Communicative Language Teaching). Your goal is to help the user improve their conversational fluency in a low-anxiety environment. 
+Rules:
+1. Prioritize meaning and flow over perfect grammar. 
+2. Keep your responses concise (1-2 sentences maximum) to maximize the user's speaking time.
+3. Ask open-ended, engaging questions to encourage elaboration.
+4. Provide implicit error correction through 'recasting'—if the user makes a grammatical error, naturally model the correct usage in your reply without explicitly pointing out their mistake.
+5. Do not list corrections or break character. 
+Start the conversation with a simple, friendly question.`;
+}
+
 export function gdTopicPrompt() {
   return `Generate ONE group discussion statement that has two reasonable sides. Phrase it as a debatable statement people can take a position on. Return ONLY the statement. No preamble, no quotes.`;
 }
