@@ -192,17 +192,20 @@ export function SessionScreen({
               Skip / New question
             </button>
             {!started ? (
-              <button
-                onClick={startRecording}
-                disabled={questionLoading || !question}
-                className="px-8 py-3.5 rounded-xl font-medium text-base transition-all hover:scale-[1.02] disabled:opacity-50"
-                style={{
-                  background: "var(--color-accent)",
-                  color: "var(--color-canvas)",
-                }}
-              >
-                BEGIN SPEAKING
-              </button>
+              <div className="flex flex-col items-center gap-3 animate-fade-in">
+                <span className="text-sm font-medium text-primary bg-primary/10 px-3 py-1 rounded-full animate-pulse">Click below to start your timer</span>
+                <button
+                  onClick={startRecording}
+                  disabled={questionLoading || !question}
+                  className="px-10 py-4 rounded-xl font-bold text-lg transition-all shadow-[0_0_30px_rgba(124,58,237,0.3)] hover:shadow-[0_0_50px_rgba(124,58,237,0.6)] hover:-translate-y-1 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+                  style={{
+                    background: "linear-gradient(135deg, var(--color-primary), #9333ea)",
+                    color: "white",
+                  }}
+                >
+                  BEGIN SPEAKING
+                </button>
+              </div>
             ) : (
               <button
                 onClick={handleFinish}

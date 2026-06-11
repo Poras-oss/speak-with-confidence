@@ -1,6 +1,6 @@
 import { useState, useRef, KeyboardEvent } from "react";
 import { DOMAINS, DURATIONS, type Domain, type Difficulty } from "@/config/modes";
-import { useApiKey, useSettings, useSessions, type WhisperModelId } from "@/hooks/useSessionStore";
+import { useApiKey, useSessions, type WhisperModelId } from "@/hooks/useSessionStore";
 import { testApiKey } from "@/hooks/useGroqAI";
 import { loadWhisper, type WhisperLoadProgress } from "@/hooks/useWhisperSTT";
 
@@ -11,14 +11,17 @@ const PRESET_INTERESTS = [
   "Economics", "Literature", "Travel",
 ];
 
+import type { Settings } from "@/hooks/useSessionStore";
+
 interface Props {
   open: boolean;
   onClose: () => void;
+  settings: Settings;
+  setSettings: (s: Partial<Settings>) => void;
 }
 
-export function SettingsDrawer({ open, onClose }: Props) {
+export function SettingsDrawer({ open, onClose, settings, setSettings }: Props) {
   const { apiKey, setApiKey } = useApiKey();
-  const { settings, setSettings } = useSettings();
   const { sessions, clearSessions } = useSessions();
   const [draftKey, setDraftKey] = useState(apiKey);
   const [testing, setTesting] = useState<"idle" | "ok" | "fail" | "loading">("idle");

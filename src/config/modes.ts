@@ -58,4 +58,4 @@ export const DOMAINS = [
 ] as const;
 export type Domain = (typeof DOMAINS)[number];
 
-export const DURATIONS = [30, 60, 120] as const;
+export const DURATIONS = [30, 60, 90, 120, 180, 300] as const;

@@ -78,7 +78,7 @@ function VoxMindApp() {
   const { apiKey } = useApiKey();
   const { profile, loading: profileLoading, incrementUsage, refreshProfile, userId } = useUserProfile();
 
-  const { settings } = useSettings();
+  const { settings, setSettings } = useSettings();
   const { sessions, addSession } = useSessions(userId);
   const { streak, bump } = useStreak();
   const { resume, setResume } = useResume();
@@ -308,6 +308,8 @@ function VoxMindApp() {
       <SettingsDrawer
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
+        settings={settings}
+        setSettings={setSettings}
       />
 
       <HistoryDrawer
