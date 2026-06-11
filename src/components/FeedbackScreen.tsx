@@ -152,6 +152,23 @@ export function FeedbackScreen({
                 </div>
               </Section>
 
+              <Section title="Resources to Learn More">
+                <div className="space-y-3">
+                  {feedback.resources?.map((r, i) => (
+                    <div key={i} className="flex flex-col gap-1 border-l-2 border-primary/30 pl-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-warm font-medium">{r.title}</span>
+                        <span className="text-xs text-warm-muted uppercase tracking-wider">{r.type}</span>
+                      </div>
+                      <p className="text-[14px] text-warm/80 leading-relaxed">{r.description}</p>
+                    </div>
+                  ))}
+                  {(!feedback.resources || feedback.resources.length === 0) && (
+                    <p className="text-warm-muted text-sm italic">No specific resources recommended this time.</p>
+                  )}
+                </div>
+              </Section>
+
               <div
                 className="rounded-2xl p-6 border"
                 style={{

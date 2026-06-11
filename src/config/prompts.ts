@@ -104,10 +104,17 @@ Respond in EXACTLY this JSON format (no markdown, no prose outside JSON):
     "confidence_estimate": 0
   },
   "nailed": ["specific thing they actually did well — quote or paraphrase from their answer. If nothing, return an empty array."],
-  "improve": ["specific weakness with a specific fix. Be direct. e.g. 'You never defined the term — open with a 1-line definition.' Not 'try to be clearer'."],
-  "ideal_framework": ["Concrete bullet of what a strong answer would cover", "Next bullet", "Next bullet"],
-  "improved_response": "A polished, well-structured 2-3 sentence version of what they were trying to say. If they said nothing, provide a strong sample opening.",
-  "reframe": "ONE blunt but constructive sentence. Acknowledge reality, name the gap, point to the next rep. No fluff."
+  "improve": ["ACTIONABLE step-by-step fix for a specific weakness. Explain exactly HOW to improve it (e.g. 'Use the STAR method: Start with the Situation, then...'). Not 'try to be clearer'."],
+  "ideal_framework": ["Detailed, concrete point that a strong answer would cover applied to THIS specific question", "Next detailed point", "Next detailed point"],
+  "improved_response": "A fully fleshed out, highly polished, and structured 3-5 sentence example response that perfectly applies the framework to the given question. Provide a strong exemplar they can learn from.",
+  "reframe": "ONE blunt but constructive sentence. Acknowledge reality, name the gap, point to the next rep. No fluff.",
+  "resources": [
+    {
+      "title": "Name of a relevant framework, concept, or technical topic",
+      "description": "1-sentence explanation of what this is and how it helps answer the question better.",
+      "type": "framework | concept | article"
+    }
+  ]
 }
 
 Rules:

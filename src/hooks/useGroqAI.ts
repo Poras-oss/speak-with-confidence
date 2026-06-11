@@ -12,6 +12,7 @@ export interface FeedbackPayload {
   ideal_framework: string[];
   improved_response: string;
   reframe: string;
+  resources: { title: string; description: string; type: string }[];
 }
 
 async function chat(apiKey: string, prompt: string | undefined, messages: { role: string; content: string }[] | undefined, opts?: { temperature?: number; max_tokens?: number }) {
@@ -113,6 +114,13 @@ function normalizeFeedback(obj: any): FeedbackPayload {
     ideal_framework: Array.isArray(obj?.ideal_framework) ? obj.ideal_framework.slice(0, 8).map(String) : [],
     improved_response: typeof obj?.improved_response === "string" ? obj.improved_response : "Keep practicing to formulate a stronger response.",
     reframe: typeof obj?.reframe === "string" ? obj.reframe : "Every rep counts. Try again.",
+    resources: Array.isArray(obj?.resources)
+      ? obj.resources.slice(0, 3).map((r: any) => ({
+          title: typeof r?.title === "string" ? r.title : "Resource",
+          description: typeof r?.description === "string" ? r.description : "",
+          type: typeof r?.type === "string" ? r.type : "article",
+        }))
+      : [],
   };
 }
 
@@ -128,5 +136,12 @@ function fallbackFeedback(): FeedbackPayload {
     ],
     improved_response: "The model hiccuped — your effort still counts. We cannot generate an improved response right now.",
     reframe: "The model hiccuped — your effort still counts. Try once more.",
+    resources: [
+      {
+        title: "Communication Frameworks",
+        description: "Explore the STAR method (Situation, Task, Action, Result) for structured storytelling.",
+        type: "framework"
+      }
+    ],
   };
 }
