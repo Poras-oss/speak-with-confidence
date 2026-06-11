@@ -14,5 +14,9 @@ export default defineConfig({
         preset: "vercel",
       }),
     ],
+    ssr: {
+      // Fixes "require is not defined in ES module scope" on Vercel
+      noExternal: ['react-razorpay', 'pdfjs-dist', '@ricky0123/vad-web', '@huggingface/transformers'],
+    },
   },
 });
