@@ -13,6 +13,20 @@
   },
   "tweets": [
     {
+      "id": "1781180190565",
+      "content": "Rebuilt the feedback loop in VoxMind to give users more actionable insights on their public speaking. Now, after each practice session, they get detailed breakdowns on structure, clarity, and completeness to help them improve faster. #publicspeaking",
+      "source": "commit",
+      "sourceDetail": "more detailed feedback",
+      "createdAt": "2026-06-11T12:16:30.565Z",
+      "publish": false,
+      "scheduledAt": null,
+      "tags": [
+        "buildinpublic",
+        "coding"
+      ],
+      "characterCount": 249
+    },
+    {
       "id": "1781173291700",
       "content": "Squashed a pesky timing bug in VoxMind, my AI-powered public speaking trainer. Now, users can start speaking without delays. Also tweaked the \"Begin to Speak\" CTA for a smoother practice experience. Your voice is a muscle, and it's getting stronger #publicspeaking",
       "source": "commit",

@@ -14,6 +14,7 @@ interface Props {
   onNext: () => void;
   onEnd: () => void;
   onRetry: () => void;
+  mode?: string;
 }
 
 export function FeedbackScreen({
@@ -27,9 +28,43 @@ export function FeedbackScreen({
   onNext,
   onEnd,
   onRetry,
+  mode,
 }: Props) {
   const fillerCount = useMemo(() => countFillers(transcript), [transcript]);
   const tokens = useMemo(() => highlightFillers(transcript), [transcript]);
+
+  const labels = useMemo(() => {
+    if (mode === "story") {
+      return {
+        structure: "Narrative Arc",
+        clarity: "Engagement",
+        completeness: "Pacing",
+        confidence: "Delivery",
+      };
+    }
+    if (mode === "devsim") {
+      return {
+        structure: "Structure",
+        clarity: "Tech Clarity",
+        completeness: "Coverage",
+        confidence: "Collaboration",
+      };
+    }
+    if (mode === "pitch") {
+      return {
+        structure: "Pitch Flow",
+        clarity: "Persuasion",
+        completeness: "Objection Handling",
+        confidence: "Delivery",
+      };
+    }
+    return {
+      structure: "Structure",
+      clarity: "Clarity",
+      completeness: "Completeness",
+      confidence: "Confidence",
+    };
+  }, [mode]);
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -104,10 +139,10 @@ export function FeedbackScreen({
             <div className="space-y-6 animate-fade-up">
               <div className="bg-card border border-border rounded-2xl p-6">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <ScoreCircle value={feedback.scores.structure} label="Structure" delay={0} />
-                  <ScoreCircle value={feedback.scores.clarity} label="Clarity" delay={120} />
-                  <ScoreCircle value={feedback.scores.completeness} label="Completeness" delay={240} />
-                  <ScoreCircle value={feedback.scores.confidence_estimate} label="Confidence" delay={360} />
+                  <ScoreCircle value={feedback.scores.structure} label={labels.structure} delay={0} />
+                  <ScoreCircle value={feedback.scores.clarity} label={labels.clarity} delay={120} />
+                  <ScoreCircle value={feedback.scores.completeness} label={labels.completeness} delay={240} />
+                  <ScoreCircle value={feedback.scores.confidence_estimate} label={labels.confidence} delay={360} />
                 </div>
               </div>
 

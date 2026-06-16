@@ -67,10 +67,26 @@ export function HomeScreen({ onPick, onOpenSettings, onOpenHistory, onOpenProgre
           {motiv}
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-14 w-full max-w-5xl">
-          {MODES.filter((m) => !m.comingSoon).map((m, i) => (
-            <ModeCard key={m.id} mode={m} onClick={() => onPick(m.id as ModeId)} delay={i * 80} disabled={!modelReady} />
-          ))}
+        <div className="w-full max-w-5xl mt-14 space-y-10">
+          {/* Core Practice Section */}
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.25em] text-warm-muted/70 mb-4 px-1">Core Practice</div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+              {MODES.filter((m) => !m.comingSoon && ["extempore", "technical", "conversation", "story"].includes(m.id)).map((m, i) => (
+                <ModeCard key={m.id} mode={m} onClick={() => onPick(m.id as ModeId)} delay={i * 70} disabled={!modelReady} />
+              ))}
+            </div>
+          </div>
+
+          {/* Advanced Simulations Section */}
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.25em] text-warm-muted/70 mb-4 px-1">Advanced Simulations</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+              {MODES.filter((m) => !m.comingSoon && ["devsim", "pitch"].includes(m.id)).map((m, i) => (
+                <ModeCard key={m.id} mode={m} onClick={() => onPick(m.id as ModeId)} delay={i * 70 + 280} disabled={!modelReady} />
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Model download progress */}
@@ -104,7 +120,7 @@ export function HomeScreen({ onPick, onOpenSettings, onOpenHistory, onOpenProgre
           </div>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 w-full max-w-5xl">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-10 w-full max-w-5xl">
           {MODES.filter((m) => m.comingSoon).map((m) => (
             <div
               key={m.id}

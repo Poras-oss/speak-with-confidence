@@ -1,4 +1,4 @@
-import type { Difficulty, ModeId } from "./modes";
+import type { Difficulty, ModeId, DevSimSubMode, PitchType } from "./modes";
 
 export function technicalQuestionPrompt(level: Difficulty, domain: string, resume?: string) {
   if (resume && resume.trim().length > 0) {
@@ -75,13 +75,181 @@ export function gdTopicPrompt() {
   return `Generate ONE group discussion statement that has two reasonable sides. Phrase it as a debatable statement people can take a position on. Return ONLY the statement. No preamble, no quotes.`;
 }
 
+const STORY_CATEGORIES = [
+  "a time you made a major mistake but learned a valuable lesson",
+  "a strange or funny encounter with a complete stranger",
+  "a childhood memory that still shapes how you think today",
+  "an unexpected success that started with a failure",
+  "a story that starts with: 'I only had ten minutes left, and the door was locked'",
+  "a mysterious package arriving at your door with no return address",
+  "having to make a decision where there was no clear right answer",
+  "an adventure or trip where everything that could go wrong did"
+];
+
+export function storyTopicPrompt() {
+  const category = pickRandom(STORY_CATEGORIES);
+  const seed = Math.random().toString(36).slice(2, 6);
+  return `Generate ONE simple, engaging story narration prompt asking the user to tell a story about: "${category}". Variation seed: ${seed}. Return ONLY the prompt as a single sentence or question. No preamble, no quotes.`;
+}
+
+export function devSimScenarioPrompt(subMode: DevSimSubMode, difficulty: Difficulty) {
+  return `You are a developer simulation generator. Create a brief real-world technical scenario/problem for a software engineer to practice speaking and collaboration in a ${difficulty} difficulty setting.
+Submode: ${subMode}
+
+Scenario types:
+- code-review: Provide a short, buggy, or poorly-designed code snippet (5-15 lines of JS/TS, Python, or Go) with a clear architectural, logic, or performance issue. Frame it as: "A peer engineer submitted this PR. What issues do you see and how would you explain them?"
+- hld: Provide a system design challenge (e.g., 'Design a real-time notification system' or 'Design a rate limiter'). Frame it as: "You are explaining the system design to a Tech Lead."
+- lld: Provide a component design challenge (e.g., 'Design the class hierarchy for a parking lot' or 'Design the API contract for a shopping cart'). Frame it as: "A colleague wants to align on class structure and API contracts."
+- debugging: Provide a bug report / production alert description (e.g., memory leak or spikes in 500 errors). Frame it as: "A junior developer is blocked by a production bug. Guide them."
+
+Format the response as a JSON object with:
+- scenarioTitle: short title
+- context: 2-3 sentences explaining the situation/roleplay
+- codeSnippet: (optional, code block or details, null if not code-review/debugging)
+- goal: 1 sentence explaining what the user needs to achieve verbally.
+
+Output ONLY the JSON object. Do not include markdown fences (like \`\`\`json).`;
+}
+
+export function devSimSystemPrompt(subMode: DevSimSubMode, subModeName: string, scenarioJson: string) {
+  return `You are simulating a real developer collaboration session.
+Sub-mode: ${subModeName}
+Scenario/Context:
+${scenarioJson}
+
+You are roleplaying as the specified colleague in this scenario (e.g., a junior engineer needing help, a senior PR author, or a peer/Tech Lead).
+Rules:
+1. Stay in character completely. Be collaborative, professional, and slightly inquisitive.
+2. Respond with short conversational messages (1-3 sentences maximum). Keep your responses concise to prioritize the user's speaking time.
+3. React to what the user says. Ask clarifying questions, challenge assumptions if they are too vague, or ask how they would implement a suggestion.
+4. Do not offer the solution yourself immediately. Make the user explain it.
+5. Keep the atmosphere realistic to a tech workplace.
+
+Start the conversation by introducing yourself in character, referring to the scenario, and asking the user to start their explanation/review.`;
+}
+
+export function devSimFeedbackPrompt(subModeName: string, scenarioContext: string, chatHistory: string) {
+  return `You are a senior engineering coach evaluating a developer's verbal communication and collaboration during a simulated session.
+Session details:
+Sub-mode: ${subModeName}
+Scenario Context: ${scenarioContext}
+Chat History (dialogue between Developer and Colleague):
+${chatHistory}
+
+Evaluate their performance and output a JSON feedback report.
+Scoring rubric (0-10, be strict):
+- structure: Did they explain their ideas systematically (e.g., problem -> trade-offs -> solution)?
+- clarity: Was their language precise, easy to follow, and free of unnecessary jargon?
+- completeness: Did they successfully address the technical requirements of the scenario?
+- confidence_estimate: Did they sound confident, collaborative, and professional (avoiding excessive hedging)?
+
+Output format MUST be EXACTLY this JSON format (no markdown, no prose outside JSON):
+{
+  "scores": {
+    "structure": 0,
+    "clarity": 0,
+    "completeness": 0,
+    "confidence_estimate": 0
+  },
+  "nailed": ["1-2 specific strengths in their communication or technical suggestions"],
+  "improve": ["1-2 highly actionable tips to improve their verbal explanation or design structure"],
+  "ideal_framework": ["Crucial architectural or communication points that a senior developer would cover in this scenario"],
+  "improved_response": "A short, polished 3-4 sentence paragraph exemplifying how they could have perfectly introduced or summarized their technical explanation.",
+  "reframe": "One concise, encouraging but direct sentence reframing their performance.",
+  "resources": [
+    {
+      "title": "Relevant design pattern, architecture pattern, or communication framework",
+      "description": "How this concept applies directly to their explanation.",
+      "type": "concept | framework"
+    }
+  ]
+}`;
+}
+
+export function pitchScenarioPrompt(pitchType: PitchType) {
+  return `You are a pitch scenario generator. Create a brief scenario for a user to practice pitching/persuasion.
+Pitch Type: ${pitchType}
+
+Scenario types:
+- sales: Pitching a SaaS product/service to a busy, skeptical decision-maker.
+- startup: Pitching a startup idea to a venture capitalist investor looking for market sizing, moats, and business plan.
+- idea: Pitching a technical or process improvement to a skeptical Engineering Manager or team.
+
+Format the response as a JSON object with:
+- scenarioTitle: short title
+- context: 2-3 sentences describing who you are pitching to and the setting/urgency.
+- goal: 1 sentence explaining what the user needs to achieve.
+
+Output ONLY the JSON object. Do not include markdown fences.`;
+}
+
+export function pitchSystemPrompt(pitchType: PitchType, pitchTypeName: string, scenarioJson: string) {
+  return `You are simulating a high-stakes pitching session ("Convince the Room").
+Pitch Type: ${pitchTypeName}
+Scenario/Context:
+${scenarioJson}
+
+You are roleplaying as the specified audience in this scenario (e.g., a skeptical VC investor, a busy VP, or a peer EM).
+Rules:
+1. Stay in character completely. Be polite but highly skeptical. Raise realistic objections (pricing, alternatives, complexity, priority, market sizing, security, etc.).
+2. Respond with short conversational responses (1-2 sentences maximum). Do not talk over the user or lecture them.
+3. Force the user to address your concerns. If they deflect or give a weak answer, press them gently on it.
+4. Keep the pace conversational.
+
+Start the conversation by welcoming the user in character and inviting them to deliver their opening pitch.`;
+}
+
+export function pitchFeedbackPrompt(pitchTypeName: string, scenarioContext: string, chatHistory: string) {
+  return `You are a pitch and persuasion coach evaluating a user's pitch performance.
+Session details:
+Pitch Type: ${pitchTypeName}
+Scenario Context: ${scenarioContext}
+Chat History (dialogue between Pitcher and Audience):
+${chatHistory}
+
+Evaluate their performance and output a JSON feedback report.
+Scoring rubric (0-10, be strict):
+- structure: Did their pitch follow a logical flow (Hook -> Problem -> Solution -> Moat/Pricing -> Call to Action)?
+- clarity: Was the value proposition articulated simply and clearly?
+- completeness: Did they successfully address your objections instead of avoiding them?
+- confidence_estimate: Did they sound persuasive, confident, and professional under pressure?
+
+Output format MUST be EXACTLY this JSON format (no markdown, no prose outside JSON):
+{
+  "scores": {
+    "structure": 0,
+    "clarity": 0,
+    "completeness": 0,
+    "confidence_estimate": 0
+  },
+  "nailed": ["1-2 specific strengths in their value proposition or objection handling"],
+  "improve": ["1-2 highly actionable tips to handle objections or structure the pitch better"],
+  "ideal_framework": ["Key points that a winning pitch would hit for this specific scenario"],
+  "improved_response": "A polished 3-4 sentence opening pitch or objection response showing how they should have addressed the scenario.",
+  "reframe": "One concise, direct sentence reframing their performance.",
+  "resources": [
+    {
+      "title": "Relevant sales framework or pitching concept",
+      "description": "How this framework helps solve their objection handling or structure.",
+      "type": "concept | framework"
+    }
+  ]
+}`;
+}
+
 export function feedbackPrompt(question: string, transcript: string, mode: ModeId | string, resume?: string) {
   const resumeBlock =
     resume && resume.trim().length > 0
       ? `\n\nCANDIDATE RESUME (for context — judge their answer against what they claim to know):\n"""\n${resume.slice(0, 3000)}\n"""`
       : "";
 
-  return `You are a blunt, senior interview coach. You DO NOT coddle. You give brutally honest, specific, actionable feedback — the kind that actually makes people improve. No empty validation. No "great job" if it wasn't. If the answer was weak, say so directly and explain exactly why. If they went blank or said almost nothing, name it and tell them what to do next time. Compliments must be earned and specific.
+  const isStory = mode === "story";
+  const structureLabel = isStory ? "Narrative Arc (Clear setup, climax, resolution)" : "structure (logical organization)";
+  const clarityLabel = isStory ? "Engagement (Vivid imagery, hooks, interest)" : "clarity (easy to follow)";
+  const completenessLabel = isStory ? "Pacing (Story flow, not rushing or dragging)" : "completeness (covering what was asked)";
+  const confidenceLabel = isStory ? "Delivery (Emotional connection, voice control, confidence)" : "confidence_estimate (pacing, filler density, conviction)";
+
+  return `You are a blunt, senior coach. You DO NOT coddle. You give brutally honest, specific, actionable feedback — the kind that actually makes people improve. No empty validation. No "great job" if it wasn't. If the answer was weak, say so directly and explain exactly why. If they went blank or said almost nothing, name it and tell them what to do next time. Compliments must be earned and specific.
 
 You are evaluating a ${mode} response.
 
@@ -90,10 +258,10 @@ THEIR ANSWER (transcribed, may include filler words and stumbles): ${transcript 
 MODE: ${mode}${resumeBlock}
 
 Scoring rubric (0-10, be strict — 5 is average, 7 is genuinely good, 9+ is rare):
-- structure: Did they organize the answer logically (intro → points → close)?
-- clarity: Could a listener actually follow it without re-reading?
-- completeness: Did they cover what the question actually asked?
-- confidence_estimate: Based on pacing, hedging, filler density, and conviction.
+- structure: ${structureLabel}
+- clarity: ${clarityLabel}
+- completeness: ${completenessLabel}
+- confidence_estimate: ${confidenceLabel}
 
 Respond in EXACTLY this JSON format (no markdown, no prose outside JSON):
 {

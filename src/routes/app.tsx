@@ -4,6 +4,8 @@ import { HomeScreen } from "@/components/HomeScreen";
 import { SessionScreen } from "@/components/SessionScreen";
 import { ConversationScreen } from "@/components/ConversationScreen";
 import { FeedbackScreen } from "@/components/FeedbackScreen";
+import { DevSimScreen } from "@/components/DevSimScreen";
+import { PitchArenaScreen } from "@/components/PitchArenaScreen";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { HistoryDrawer } from "@/components/HistoryDrawer";
 import { ProgressDrawer } from "@/components/ProgressDrawer";
@@ -17,6 +19,9 @@ import {
   extemporeTopicPrompt,
   gdTopicPrompt,
   feedbackPrompt,
+  storyTopicPrompt,
+  devSimFeedbackPrompt,
+  pitchFeedbackPrompt,
 } from "@/config/prompts";
 
 async function getUserCountry(): Promise<string | undefined> {
@@ -134,6 +139,9 @@ function VoxMindApp() {
           const countryContext = await getUserCountry();
           prompt = extemporeTopicPrompt(settings.extemporeInterests, countryContext);
         }
+        else if (mode === "story") {
+          prompt = storyTopicPrompt();
+        }
         else prompt = gdTopicPrompt();
         const q = await generateText(apiKey, prompt);
         setQuestion(q);
@@ -161,6 +169,9 @@ function VoxMindApp() {
         } else if (mode === "technical" && resume) {
           setPremiumOpen(true);
           return;
+        } else if (mode === "devsim" || mode === "pitch") {
+          setPremiumOpen(true);
+          return;
         }
       }
 
@@ -169,7 +180,7 @@ function VoxMindApp() {
       setFeedback(null);
       setFeedbackError(null);
       setScreen("session");
-      if (mode !== "conversation") {
+      if (mode !== "conversation" && mode !== "devsim" && mode !== "pitch") {
         fetchQuestion(mode);
       }
     },
@@ -177,22 +188,37 @@ function VoxMindApp() {
   );
 
   const finishSession = useCallback(
-    async (t: string, durSec: number) => {
+    async (t: string, durSec: number, customQuestion?: string) => {
       setTranscript(t);
       setDurationActual(durSec);
       setScreen("feedback");
       setFeedback(null);
       setFeedbackError(null);
       setFeedbackLoading(true);
+      
+      const q = customQuestion || question;
+      if (customQuestion) {
+        setQuestion(customQuestion);
+      }
+
       try {
-        const fb = await generateFeedback(apiKey, feedbackPrompt(question, t, activeMode || "extempore", activeMode === "technical" ? resume?.text : undefined));
+        let fbPrompt = "";
+        if (activeMode === "devsim") {
+          fbPrompt = devSimFeedbackPrompt(activeMode, q, t);
+        } else if (activeMode === "pitch") {
+          fbPrompt = pitchFeedbackPrompt(activeMode, q, t);
+        } else {
+          fbPrompt = feedbackPrompt(q, t, activeMode || "extempore", activeMode === "technical" ? resume?.text : undefined);
+        }
+
+        const fb = await generateFeedback(apiKey, fbPrompt);
         setFeedback(fb);
         bump();
         addSession({
           id: crypto.randomUUID(),
           date: Date.now(),
           mode: activeMode || "extempore",
-          question,
+          question: q,
           transcript: t,
           durationSec: durSec,
           feedback: fb,
@@ -211,7 +237,15 @@ function VoxMindApp() {
     setFeedbackError(null);
     setFeedbackLoading(true);
     try {
-      const fb = await generateFeedback(apiKey, feedbackPrompt(question, transcript, activeMode, activeMode === "technical" ? resume?.text : undefined));
+      let fbPrompt = "";
+      if (activeMode === "devsim") {
+        fbPrompt = devSimFeedbackPrompt(activeMode, question, transcript);
+      } else if (activeMode === "pitch") {
+        fbPrompt = pitchFeedbackPrompt(activeMode, question, transcript);
+      } else {
+        fbPrompt = feedbackPrompt(question, transcript, activeMode, activeMode === "technical" ? resume?.text : undefined);
+      }
+      const fb = await generateFeedback(apiKey, fbPrompt);
       setFeedback(fb);
     } catch {
       setFeedbackError("Still no luck. Check your network or try again.");
@@ -278,7 +312,7 @@ function VoxMindApp() {
         />
       )}
 
-      {screen === "session" && modeCfg && activeMode !== "conversation" && (
+      {screen === "session" && modeCfg && activeMode !== "conversation" && activeMode !== "devsim" && activeMode !== "pitch" && (
         <SessionScreen
           mode={modeCfg}
           difficultyLabel={activeMode === "technical" ? settings.difficulty : undefined}
@@ -300,6 +334,23 @@ function VoxMindApp() {
         />
       )}
 
+      {screen === "session" && modeCfg && activeMode === "devsim" && (
+        <DevSimScreen
+          apiKey={apiKey}
+          difficulty={settings.difficulty}
+          onExit={exitToHome}
+          onFinish={finishSession}
+        />
+      )}
+
+      {screen === "session" && modeCfg && activeMode === "pitch" && (
+        <PitchArenaScreen
+          apiKey={apiKey}
+          onExit={exitToHome}
+          onFinish={finishSession}
+        />
+      )}
+
       {screen === "feedback" && (
         <FeedbackScreen
           question={question}
@@ -312,6 +363,7 @@ function VoxMindApp() {
           onNext={nextQuestion}
           onEnd={exitToHome}
           onRetry={retryFeedback}
+          mode={activeMode || undefined}
         />
       )}
 
