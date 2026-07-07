@@ -1,4 +1,4 @@
-export type ModeId = "extempore" | "technical" | "gd" | "conversation" | "devsim" | "pitch" | "story";
+export type ModeId = "extempore" | "technical" | "gd" | "conversation" | "devsim" | "pitch" | "story" | "interview";
 export type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 
 export interface ModeConfig {
@@ -14,6 +14,7 @@ export interface ModeConfig {
 
 export type DevSimSubMode = "code-review" | "hld" | "lld" | "debugging";
 export type PitchType = "sales" | "startup" | "idea";
+export type InterviewType = "behavioral" | "technical-depth" | "resume-deep-dive";
 
 export interface DevSimSubModeConfig {
   id: DevSimSubMode;
@@ -25,6 +26,14 @@ export interface DevSimSubModeConfig {
 
 export interface PitchTypeConfig {
   id: PitchType;
+  name: string;
+  description: string;
+  aiRole: string;
+  icon: string;
+}
+
+export interface InterviewTypeConfig {
+  id: InterviewType;
   name: string;
   description: string;
   aiRole: string;
@@ -86,6 +95,30 @@ export const PITCH_TYPES: PitchTypeConfig[] = [
   },
 ];
 
+export const INTERVIEW_TYPES: InterviewTypeConfig[] = [
+  {
+    id: "behavioral",
+    name: "Behavioral Round",
+    description: "Practice STAR answers, conflict stories, ownership, failure, leadership, and follow-up probing.",
+    aiRole: "Hiring Manager",
+    icon: "BR",
+  },
+  {
+    id: "technical-depth",
+    name: "Technical Round",
+    description: "Answer practical engineering questions with trade-offs, constraints, edge cases, and follow-up pressure.",
+    aiRole: "Senior Technical Interviewer",
+    icon: "TR",
+  },
+  {
+    id: "resume-deep-dive",
+    name: "Resume Deep Dive",
+    description: "Defend resume claims, explain project decisions, metrics, impact, and what you personally owned.",
+    aiRole: "Staff Engineer Interviewer",
+    icon: "RD",
+  },
+];
+
 export const MODES: ModeConfig[] = [
   {
     id: "extempore",
@@ -104,6 +137,15 @@ export const MODES: ModeConfig[] = [
     difficulty: "Core",
     icon: "◆",
     defaultDuration: 120,
+  },
+  {
+    id: "interview",
+    name: "AI Interview Practice",
+    short: "Real Mock Interview",
+    description: "A serious interview round with follow-ups, probing, and full-session feedback.",
+    difficulty: "Challenging",
+    icon: "AI",
+    defaultDuration: 300,
   },
   {
     id: "conversation",

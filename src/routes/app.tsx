@@ -6,6 +6,7 @@ import { ConversationScreen } from "@/components/ConversationScreen";
 import { FeedbackScreen } from "@/components/FeedbackScreen";
 import { DevSimScreen } from "@/components/DevSimScreen";
 import { PitchArenaScreen } from "@/components/PitchArenaScreen";
+import { InterviewPracticeScreen } from "@/components/InterviewPracticeScreen";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { HistoryDrawer } from "@/components/HistoryDrawer";
 import { ProgressDrawer } from "@/components/ProgressDrawer";
@@ -22,6 +23,7 @@ import {
   storyTopicPrompt,
   devSimFeedbackPrompt,
   pitchFeedbackPrompt,
+  interviewFeedbackPrompt,
 } from "@/config/prompts";
 
 async function getUserCountry(): Promise<string | undefined> {
@@ -169,7 +171,7 @@ function VoxMindApp() {
         } else if (mode === "technical" && resume) {
           setPremiumOpen(true);
           return;
-        } else if (mode === "devsim" || mode === "pitch") {
+        } else if (mode === "devsim" || mode === "pitch" || mode === "interview") {
           setPremiumOpen(true);
           return;
         }
@@ -180,7 +182,7 @@ function VoxMindApp() {
       setFeedback(null);
       setFeedbackError(null);
       setScreen("session");
-      if (mode !== "conversation" && mode !== "devsim" && mode !== "pitch") {
+      if (mode !== "conversation" && mode !== "devsim" && mode !== "pitch" && mode !== "interview") {
         fetchQuestion(mode);
       }
     },
@@ -207,6 +209,8 @@ function VoxMindApp() {
           fbPrompt = devSimFeedbackPrompt(activeMode, q, t);
         } else if (activeMode === "pitch") {
           fbPrompt = pitchFeedbackPrompt(activeMode, q, t);
+        } else if (activeMode === "interview") {
+          fbPrompt = interviewFeedbackPrompt("AI Interview Practice", q, t);
         } else {
           fbPrompt = feedbackPrompt(q, t, activeMode || "extempore", activeMode === "technical" ? resume?.text : undefined);
         }
@@ -242,6 +246,8 @@ function VoxMindApp() {
         fbPrompt = devSimFeedbackPrompt(activeMode, question, transcript);
       } else if (activeMode === "pitch") {
         fbPrompt = pitchFeedbackPrompt(activeMode, question, transcript);
+      } else if (activeMode === "interview") {
+        fbPrompt = interviewFeedbackPrompt("AI Interview Practice", question, transcript);
       } else {
         fbPrompt = feedbackPrompt(question, transcript, activeMode, activeMode === "technical" ? resume?.text : undefined);
       }
@@ -312,7 +318,7 @@ function VoxMindApp() {
         />
       )}
 
-      {screen === "session" && modeCfg && activeMode !== "conversation" && activeMode !== "devsim" && activeMode !== "pitch" && (
+      {screen === "session" && modeCfg && activeMode !== "conversation" && activeMode !== "devsim" && activeMode !== "pitch" && activeMode !== "interview" && (
         <SessionScreen
           mode={modeCfg}
           difficultyLabel={activeMode === "technical" ? settings.difficulty : undefined}
@@ -346,6 +352,17 @@ function VoxMindApp() {
       {screen === "session" && modeCfg && activeMode === "pitch" && (
         <PitchArenaScreen
           apiKey={apiKey}
+          onExit={exitToHome}
+          onFinish={finishSession}
+        />
+      )}
+
+      {screen === "session" && modeCfg && activeMode === "interview" && (
+        <InterviewPracticeScreen
+          apiKey={apiKey}
+          difficulty={settings.difficulty}
+          domain={settings.domain}
+          resumeText={resume?.text}
           onExit={exitToHome}
           onFinish={finishSession}
         />

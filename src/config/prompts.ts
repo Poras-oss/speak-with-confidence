@@ -1,4 +1,4 @@
-import type { Difficulty, ModeId, DevSimSubMode, PitchType } from "./modes";
+import type { Difficulty, ModeId, DevSimSubMode, PitchType, InterviewType } from "./modes";
 
 export function technicalQuestionPrompt(level: Difficulty, domain: string, resume?: string) {
   if (resume && resume.trim().length > 0) {
@@ -232,6 +232,87 @@ Output format MUST be EXACTLY this JSON format (no markdown, no prose outside JS
       "title": "Relevant sales framework or pitching concept",
       "description": "How this framework helps solve their objection handling or structure.",
       "type": "concept | framework"
+    }
+  ]
+}`;
+}
+
+export function interviewScenarioPrompt(type: InterviewType, difficulty: Difficulty, domain: string, resume?: string) {
+  const resumeBlock =
+    resume && resume.trim().length > 0
+      ? `\nCandidate resume excerpt:\n"""\n${resume.slice(0, 3500)}\n"""`
+      : "";
+
+  return `You are generating a realistic mock interview setup.
+Interview type: ${type}
+Candidate level: ${difficulty}
+Domain: ${domain}${resumeBlock}
+
+Create one focused interview round that feels like a real hiring conversation, not a trivia game.
+- behavioral: evaluate ownership, conflict, ambiguity, failure, and impact using follow-up questions.
+- technical-depth: evaluate practical engineering judgment, trade-offs, edge cases, debugging, and communication.
+- resume-deep-dive: evaluate whether the candidate can defend concrete resume/project claims with details, decisions, metrics, and personal ownership.
+
+Output ONLY a JSON object with:
+{
+  "interviewTitle": "short realistic title",
+  "role": "the role or team context",
+  "context": "2 concise sentences describing the interview setting",
+  "openingQuestion": "the first question the interviewer asks",
+  "competencies": ["3-5 concrete competencies being evaluated"]
+}`;
+}
+
+export function interviewSystemPrompt(typeName: string, scenarioJson: string) {
+  return `You are conducting a realistic mock interview.
+Interview type: ${typeName}
+Scenario:
+${scenarioJson}
+
+Rules:
+1. Stay fully in character as the interviewer.
+2. Ask one question at a time and keep responses concise.
+3. Start with the opening question from the scenario.
+4. Probe deeply with follow-ups based on the candidate's actual answer. Ask for examples, trade-offs, metrics, constraints, ownership, edge cases, or alternatives.
+5. Do not coach during the interview. Do not reveal ideal answers.
+6. If the candidate gives a vague answer, ask for specifics. If they ramble, redirect them professionally.
+7. Keep the tone realistic: respectful, direct, and evaluative.
+
+Begin the interview now.`;
+}
+
+export function interviewFeedbackPrompt(typeName: string, scenarioContext: string, chatHistory: string) {
+  return `You are a senior interview coach and hiring panel evaluator. Evaluate the candidate's full mock interview performance.
+
+Interview type: ${typeName}
+Scenario Context: ${scenarioContext}
+Interview transcript:
+${chatHistory}
+
+Score strictly from 0-10:
+- structure: Did answers use an interview-ready structure such as STAR, problem -> constraints -> trade-offs -> decision, or claim -> evidence -> impact?
+- clarity: Were answers concise, specific, and easy to follow?
+- completeness: Did the candidate answer the actual question with enough depth, examples, metrics, trade-offs, and ownership?
+- confidence_estimate: Did they sound credible, composed, and senior enough for the stated level?
+
+Output format MUST be EXACTLY this JSON format (no markdown, no prose outside JSON):
+{
+  "scores": {
+    "structure": 0,
+    "clarity": 0,
+    "completeness": 0,
+    "confidence_estimate": 0
+  },
+  "nailed": ["1-2 specific interview moments that worked, quoting or paraphrasing their answer"],
+  "improve": ["1-2 direct, actionable fixes for the next mock interview"],
+  "ideal_framework": ["What a strong candidate should have covered for this interview scenario"],
+  "improved_response": "A polished 3-5 sentence sample answer or summary showing how the candidate could answer one key question better.",
+  "reframe": "One blunt but constructive sentence about their interview readiness.",
+  "resources": [
+    {
+      "title": "Relevant interview framework or technical concept",
+      "description": "How to apply it in the next interview round.",
+      "type": "framework | concept"
     }
   ]
 }`;

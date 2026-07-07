@@ -81,8 +81,8 @@ export function HomeScreen({ onPick, onOpenSettings, onOpenHistory, onOpenProgre
           {/* Advanced Simulations Section */}
           <div>
             <div className="text-[10px] uppercase tracking-[0.25em] text-warm-muted/70 mb-4 px-1">Advanced Simulations</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-              {MODES.filter((m) => !m.comingSoon && ["devsim", "pitch"].includes(m.id)).map((m, i) => (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+              {MODES.filter((m) => !m.comingSoon && ["interview", "devsim", "pitch"].includes(m.id)).map((m, i) => (
                 <ModeCard key={m.id} mode={m} onClick={() => onPick(m.id as ModeId)} delay={i * 70 + 280} disabled={!modelReady} />
               ))}
             </div>
