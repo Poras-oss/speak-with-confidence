@@ -13,6 +13,18 @@ export const Route = createFileRoute("/blog/")({
 function BlogIndex() {
   const posts = [
     {
+      slug: "ai-interview-practice-guide",
+      title: "AI Interview Practice: The Ultimate Guide to Speaking with Confidence",
+      excerpt: "Master your next job interview by treating your answers as mini-speeches. Learn how AI interview practice helps you speak with confidence and authority.",
+      date: "July 7, 2026"
+    },
+    {
+      slug: "best-ai-mock-interview-strategies",
+      title: "Best Strategies for AI Interview Practice in 2026",
+      excerpt: "Discover the best strategies for AI mock interview practice. Learn how to use deliberate practice and structured feedback to ace your technical and behavioral interviews.",
+      date: "July 7, 2026"
+    },
+    {
       slug: "overcoming-glossophobia-cbt",
       title: "Overcoming Glossophobia: How CBT Rewires Presentation Anxiety",
       excerpt: "Glossophobia is the most common social phobia. Discover how Cognitive Restructuring helps you replace catastrophic thoughts with structured, logical confidence.",

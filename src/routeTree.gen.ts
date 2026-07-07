@@ -18,6 +18,8 @@ import { Route as BlogOvercomingGlossophobiaCbtRouteImport } from './routes/blog
 import { Route as BlogIntrovertsPublicSpeakingAdvantageRouteImport } from './routes/blog/introverts-public-speaking-advantage'
 import { Route as BlogImposterSyndromeTechnicalInterviewsRouteImport } from './routes/blog/imposter-syndrome-technical-interviews'
 import { Route as BlogExposureTherapyPublicSpeakingRouteImport } from './routes/blog/exposure-therapy-public-speaking'
+import { Route as BlogBestAiMockInterviewStrategiesRouteImport } from './routes/blog/best-ai-mock-interview-strategies'
+import { Route as BlogAiInterviewPracticeGuideRouteImport } from './routes/blog/ai-interview-practice-guide'
 import { Route as BlogSlugRouteImport } from './routes/blog/$slug'
 
 const AppRoute = AppRouteImport.update({
@@ -71,6 +73,18 @@ const BlogExposureTherapyPublicSpeakingRoute =
     path: '/blog/exposure-therapy-public-speaking',
     getParentRoute: () => rootRouteImport,
   } as any)
+const BlogBestAiMockInterviewStrategiesRoute =
+  BlogBestAiMockInterviewStrategiesRouteImport.update({
+    id: '/blog/best-ai-mock-interview-strategies',
+    path: '/blog/best-ai-mock-interview-strategies',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const BlogAiInterviewPracticeGuideRoute =
+  BlogAiInterviewPracticeGuideRouteImport.update({
+    id: '/blog/ai-interview-practice-guide',
+    path: '/blog/ai-interview-practice-guide',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/blog/$slug',
   path: '/blog/$slug',
@@ -81,6 +95,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/blog/ai-interview-practice-guide': typeof BlogAiInterviewPracticeGuideRoute
+  '/blog/best-ai-mock-interview-strategies': typeof BlogBestAiMockInterviewStrategiesRoute
   '/blog/exposure-therapy-public-speaking': typeof BlogExposureTherapyPublicSpeakingRoute
   '/blog/imposter-syndrome-technical-interviews': typeof BlogImposterSyndromeTechnicalInterviewsRoute
   '/blog/introverts-public-speaking-advantage': typeof BlogIntrovertsPublicSpeakingAdvantageRoute
@@ -93,6 +109,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/blog/ai-interview-practice-guide': typeof BlogAiInterviewPracticeGuideRoute
+  '/blog/best-ai-mock-interview-strategies': typeof BlogBestAiMockInterviewStrategiesRoute
   '/blog/exposure-therapy-public-speaking': typeof BlogExposureTherapyPublicSpeakingRoute
   '/blog/imposter-syndrome-technical-interviews': typeof BlogImposterSyndromeTechnicalInterviewsRoute
   '/blog/introverts-public-speaking-advantage': typeof BlogIntrovertsPublicSpeakingAdvantageRoute
@@ -106,6 +124,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/blog/ai-interview-practice-guide': typeof BlogAiInterviewPracticeGuideRoute
+  '/blog/best-ai-mock-interview-strategies': typeof BlogBestAiMockInterviewStrategiesRoute
   '/blog/exposure-therapy-public-speaking': typeof BlogExposureTherapyPublicSpeakingRoute
   '/blog/imposter-syndrome-technical-interviews': typeof BlogImposterSyndromeTechnicalInterviewsRoute
   '/blog/introverts-public-speaking-advantage': typeof BlogIntrovertsPublicSpeakingAdvantageRoute
@@ -120,6 +140,8 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/blog/$slug'
+    | '/blog/ai-interview-practice-guide'
+    | '/blog/best-ai-mock-interview-strategies'
     | '/blog/exposure-therapy-public-speaking'
     | '/blog/imposter-syndrome-technical-interviews'
     | '/blog/introverts-public-speaking-advantage'
@@ -132,6 +154,8 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/blog/$slug'
+    | '/blog/ai-interview-practice-guide'
+    | '/blog/best-ai-mock-interview-strategies'
     | '/blog/exposure-therapy-public-speaking'
     | '/blog/imposter-syndrome-technical-interviews'
     | '/blog/introverts-public-speaking-advantage'
@@ -144,6 +168,8 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/blog/$slug'
+    | '/blog/ai-interview-practice-guide'
+    | '/blog/best-ai-mock-interview-strategies'
     | '/blog/exposure-therapy-public-speaking'
     | '/blog/imposter-syndrome-technical-interviews'
     | '/blog/introverts-public-speaking-advantage'
@@ -157,6 +183,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRoute
   BlogSlugRoute: typeof BlogSlugRoute
+  BlogAiInterviewPracticeGuideRoute: typeof BlogAiInterviewPracticeGuideRoute
+  BlogBestAiMockInterviewStrategiesRoute: typeof BlogBestAiMockInterviewStrategiesRoute
   BlogExposureTherapyPublicSpeakingRoute: typeof BlogExposureTherapyPublicSpeakingRoute
   BlogImposterSyndromeTechnicalInterviewsRoute: typeof BlogImposterSyndromeTechnicalInterviewsRoute
   BlogIntrovertsPublicSpeakingAdvantageRoute: typeof BlogIntrovertsPublicSpeakingAdvantageRoute
@@ -231,6 +259,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogExposureTherapyPublicSpeakingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/best-ai-mock-interview-strategies': {
+      id: '/blog/best-ai-mock-interview-strategies'
+      path: '/blog/best-ai-mock-interview-strategies'
+      fullPath: '/blog/best-ai-mock-interview-strategies'
+      preLoaderRoute: typeof BlogBestAiMockInterviewStrategiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/ai-interview-practice-guide': {
+      id: '/blog/ai-interview-practice-guide'
+      path: '/blog/ai-interview-practice-guide'
+      fullPath: '/blog/ai-interview-practice-guide'
+      preLoaderRoute: typeof BlogAiInterviewPracticeGuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/$slug': {
       id: '/blog/$slug'
       path: '/blog/$slug'
@@ -245,6 +287,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRoute,
   BlogSlugRoute: BlogSlugRoute,
+  BlogAiInterviewPracticeGuideRoute: BlogAiInterviewPracticeGuideRoute,
+  BlogBestAiMockInterviewStrategiesRoute:
+    BlogBestAiMockInterviewStrategiesRoute,
   BlogExposureTherapyPublicSpeakingRoute:
     BlogExposureTherapyPublicSpeakingRoute,
   BlogImposterSyndromeTechnicalInterviewsRoute:
