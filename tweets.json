@@ -13,6 +13,20 @@
   },
   "tweets": [
     {
+      "id": "1783445805801",
+      "content": "I just added AI-powered interview practice to VoxMind, my public speaking trainer. Users can now get real-time feedback on structure, clarity, and completeness while answering AI-generated interview questions. Your voice is a muscle, and it can be trained. #publicspeaking",
+      "source": "commit",
+      "sourceDetail": "added AI interview practice",
+      "createdAt": "2026-07-07T17:36:45.801Z",
+      "publish": false,
+      "scheduledAt": null,
+      "tags": [
+        "buildinpublic",
+        "coding"
+      ],
+      "characterCount": 272
+    },
+    {
       "id": "1781180190565",
       "content": "Rebuilt the feedback loop in VoxMind to give users more actionable insights on their public speaking. Now, after each practice session, they get detailed breakdowns on structure, clarity, and completeness to help them improve faster. #publicspeaking",
       "source": "commit",
