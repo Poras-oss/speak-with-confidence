@@ -148,12 +148,13 @@ function VoxMindApp() {
         else prompt = gdTopicPrompt();
         const q = await generateText(geminiApiKey, prompt);
         if (!q) {
-          setQuestionError("Couldn't fetch a question. Try again.");
+          setQuestionError("Empty response from AI. Try again.");
           return;
         }
         setQuestion(q);
       } catch (e: any) {
-        setQuestionError("Couldn't fetch a question. Try again.");
+        console.error("[fetchQuestion]", e?.message);
+        setQuestionError(e?.message || "Couldn't fetch a question. Try again.");
       } finally {
         setQuestionLoading(false);
       }

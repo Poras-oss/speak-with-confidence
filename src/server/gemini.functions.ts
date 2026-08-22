@@ -3,7 +3,7 @@ import { auth } from "@clerk/tanstack-react-start/server";
 import { createClient } from "@supabase/supabase-js";
 
 const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
-const MODEL = "gemini-2.5-flash-lite";
+const MODEL = "gemini-3.5-flash-lite";
 
 // Helper to check and enforce limits on the server
 async function enforceServerLimits(): Promise<{ ok: boolean; error?: string }> {
