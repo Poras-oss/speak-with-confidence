@@ -6,6 +6,7 @@ import type { Difficulty, Domain, ModeId } from "@/config/modes";
 
 const KEYS = {
   apiKey: "voxmind:apiKey",
+  geminiApiKey: "voxmind:geminiApiKey",
   settings: "voxmind:settings",
   sessions: "voxmind:sessions",
   streak: "voxmind:streak",
@@ -98,6 +99,21 @@ export function useApiKey() {
     }
   }, []);
   return { apiKey, setApiKey };
+}
+
+export function useGeminiApiKey() {
+  const [geminiApiKey, setGeminiApiKeyState] = useState<string>("");
+  useEffect(() => {
+    setGeminiApiKeyState(read<string>(KEYS.geminiApiKey, ""));
+  }, []);
+  const setGeminiApiKey = useCallback((v: string) => {
+    setGeminiApiKeyState(v);
+    if (typeof window !== "undefined") {
+      if (v) localStorage.setItem(KEYS.geminiApiKey, JSON.stringify(v));
+      else localStorage.removeItem(KEYS.geminiApiKey);
+    }
+  }, []);
+  return { geminiApiKey, setGeminiApiKey };
 }
 
 export function useSettings() {

@@ -12,7 +12,7 @@ import { HistoryDrawer } from "@/components/HistoryDrawer";
 import { ProgressDrawer } from "@/components/ProgressDrawer";
 import { PremiumModal } from "@/components/PremiumModal";
 import { MODES, type ModeId } from "@/config/modes";
-import { useSettings, useSessions, useStreak, useResume, useApiKey, useUserProfile } from "@/hooks/useSessionStore";
+import { useSettings, useSessions, useStreak, useResume, useApiKey, useGeminiApiKey, useUserProfile } from "@/hooks/useSessionStore";
 import { generateText, generateFeedback, type FeedbackPayload } from "@/hooks/useGroqAI";
 import { loadWhisper, type WhisperLoadProgress } from "@/hooks/useWhisperSTT";
 import {
@@ -84,6 +84,7 @@ function VoxMindApp() {
   }, []);
 
   const { apiKey } = useApiKey();
+  const { geminiApiKey } = useGeminiApiKey();
   const { profile, loading: profileLoading, incrementUsage, refreshProfile, userId } = useUserProfile();
 
   const { settings, setSettings } = useSettings();
@@ -145,7 +146,11 @@ function VoxMindApp() {
           prompt = storyTopicPrompt();
         }
         else prompt = gdTopicPrompt();
-        const q = await generateText(apiKey, prompt);
+        const q = await generateText(geminiApiKey, prompt);
+        if (!q) {
+          setQuestionError("Couldn't fetch a question. Try again.");
+          return;
+        }
         setQuestion(q);
       } catch (e: any) {
         setQuestionError("Couldn't fetch a question. Try again.");
@@ -153,13 +158,13 @@ function VoxMindApp() {
         setQuestionLoading(false);
       }
     },
-    [settings.difficulty, settings.domain, settings.extemporeInterests, resume?.text, apiKey]
+    [settings.difficulty, settings.domain, settings.extemporeInterests, resume?.text, geminiApiKey]
   );
 
   const startMode = useCallback(
     (mode: ModeId) => {
       const isPremium = profile?.plan === "premium";
-      const hasCustomKey = !!apiKey;
+      const hasCustomKey = !!geminiApiKey;
 
       if (!isPremium && !hasCustomKey) {
         if (mode === "extempore") {
@@ -186,7 +191,7 @@ function VoxMindApp() {
         fetchQuestion(mode);
       }
     },
-    [fetchQuestion, profile, apiKey, incrementUsage, resume]
+    [fetchQuestion, profile, geminiApiKey, incrementUsage, resume]
   );
 
   const finishSession = useCallback(
@@ -215,7 +220,7 @@ function VoxMindApp() {
           fbPrompt = feedbackPrompt(q, t, activeMode || "extempore", activeMode === "technical" ? resume?.text : undefined);
         }
 
-        const fb = await generateFeedback(apiKey, fbPrompt);
+        const fb = await generateFeedback(geminiApiKey, fbPrompt);
         setFeedback(fb);
         bump();
         addSession({
@@ -233,7 +238,7 @@ function VoxMindApp() {
         setFeedbackLoading(false);
       }
     },
-    [question, activeMode, addSession, bump, resume?.text, apiKey]
+    [question, activeMode, addSession, bump, resume?.text, geminiApiKey]
   );
 
   const retryFeedback = useCallback(async () => {
@@ -251,14 +256,14 @@ function VoxMindApp() {
       } else {
         fbPrompt = feedbackPrompt(question, transcript, activeMode, activeMode === "technical" ? resume?.text : undefined);
       }
-      const fb = await generateFeedback(apiKey, fbPrompt);
+      const fb = await generateFeedback(geminiApiKey, fbPrompt);
       setFeedback(fb);
     } catch {
       setFeedbackError("Still no luck. Check your network or try again.");
     } finally {
       setFeedbackLoading(false);
     }
-  }, [question, transcript, activeMode, resume?.text, apiKey]);
+  }, [question, transcript, activeMode, resume?.text, geminiApiKey]);
 
   const tryAgain = useCallback(() => {
     setTranscript("");
@@ -306,7 +311,7 @@ function VoxMindApp() {
           resume={resume}
           onResumeChange={(r) => {
             const isPremium = profile?.plan === "premium";
-            const hasCustomKey = !!apiKey;
+            const hasCustomKey = !!geminiApiKey;
             if (r && !isPremium && !hasCustomKey) {
               setPremiumOpen(true);
               return;
@@ -335,14 +340,14 @@ function VoxMindApp() {
 
       {screen === "session" && modeCfg && activeMode === "conversation" && (
         <ConversationScreen
-          apiKey={apiKey}
+          apiKey={geminiApiKey}
           onExit={exitToHome}
         />
       )}
 
       {screen === "session" && modeCfg && activeMode === "devsim" && (
         <DevSimScreen
-          apiKey={apiKey}
+          apiKey={geminiApiKey}
           difficulty={settings.difficulty}
           onExit={exitToHome}
           onFinish={finishSession}
@@ -351,7 +356,7 @@ function VoxMindApp() {
 
       {screen === "session" && modeCfg && activeMode === "pitch" && (
         <PitchArenaScreen
-          apiKey={apiKey}
+          apiKey={geminiApiKey}
           onExit={exitToHome}
           onFinish={finishSession}
         />
@@ -359,7 +364,7 @@ function VoxMindApp() {
 
       {screen === "session" && modeCfg && activeMode === "interview" && (
         <InterviewPracticeScreen
-          apiKey={apiKey}
+          apiKey={geminiApiKey}
           difficulty={settings.difficulty}
           domain={settings.domain}
           resumeText={resume?.text}

@@ -1,6 +1,6 @@
 import { useState, useRef, KeyboardEvent } from "react";
 import { DOMAINS, DURATIONS, type Domain, type Difficulty } from "@/config/modes";
-import { useApiKey, useSessions, type WhisperModelId } from "@/hooks/useSessionStore";
+import { useApiKey, useGeminiApiKey, useSessions, type WhisperModelId } from "@/hooks/useSessionStore";
 import { testApiKey } from "@/hooks/useGroqAI";
 import { loadWhisper, type WhisperLoadProgress } from "@/hooks/useWhisperSTT";
 
@@ -22,15 +22,19 @@ interface Props {
 
 export function SettingsDrawer({ open, onClose, settings, setSettings }: Props) {
   const { apiKey, setApiKey } = useApiKey();
+  const { geminiApiKey, setGeminiApiKey } = useGeminiApiKey();
   const { sessions, clearSessions } = useSessions();
-  const [draftKey, setDraftKey] = useState(apiKey);
-  const [testing, setTesting] = useState<"idle" | "ok" | "fail" | "loading">("idle");
+  
+  const [draftGroqKey, setDraftGroqKey] = useState(apiKey);
+  const [draftGeminiKey, setDraftGeminiKey] = useState(geminiApiKey);
+  
+  const [testingGemini, setTestingGemini] = useState<"idle" | "ok" | "fail" | "loading">("idle");
   const [whisperLoad, setWhisperLoad] = useState<WhisperLoadProgress>({ status: "idle", progress: 0, message: "" });
 
-  const test = async () => {
-    setTesting("loading");
-    const result = await testApiKey(draftKey || apiKey);
-    setTesting(result.ok ? "ok" : "fail");
+  const testGemini = async () => {
+    setTestingGemini("loading");
+    const result = await testApiKey(draftGeminiKey || geminiApiKey);
+    setTestingGemini(result.ok ? "ok" : "fail");
   };
 
   const downloadWhisper = async () => {
@@ -42,7 +46,8 @@ export function SettingsDrawer({ open, onClose, settings, setSettings }: Props) 
   };
 
   const save = () => {
-    setApiKey(draftKey.trim());
+    setApiKey(draftGroqKey.trim());
+    setGeminiApiKey(draftGeminiKey.trim());
   };
 
   const exportData = () => {
@@ -71,20 +76,35 @@ export function SettingsDrawer({ open, onClose, settings, setSettings }: Props) 
 
         <div className="p-6 space-y-8">
           {/* API key */}
-          <Section title="Groq API Key">
+          <Section title="Gemini API Key (Questions & AI)">
             <input
               type="password"
-              value={draftKey}
-              onChange={(e) => setDraftKey(e.target.value)}
-              placeholder="gsk_..."
+              value={draftGeminiKey}
+              onChange={(e) => setDraftGeminiKey(e.target.value)}
+              placeholder="AIza..."
               className="w-full bg-input/60 border border-border rounded-lg px-3 py-2.5 text-sm text-warm placeholder:text-warm-muted/50 focus:outline-none focus:ring-2 focus:ring-ring"
             />
             <div className="flex gap-2 mt-2">
               <button onClick={save} className="flex-1 bg-primary text-primary-foreground rounded-lg py-2 text-sm font-medium hover:opacity-90 transition">
-                Save
+                Save Keys
               </button>
-              <button onClick={test} disabled={testing === "loading"} className="px-3 bg-secondary text-warm rounded-lg py-2 text-sm hover:bg-accent transition">
-                {testing === "loading" ? "Testing…" : testing === "ok" ? "✓ Working" : testing === "fail" ? "✗ Invalid" : "Test"}
+              <button onClick={testGemini} disabled={testingGemini === "loading"} className="px-3 bg-secondary text-warm rounded-lg py-2 text-sm hover:bg-accent transition">
+                {testingGemini === "loading" ? "Testing…" : testingGemini === "ok" ? "✓ Working" : testingGemini === "fail" ? "✗ Invalid" : "Test"}
+              </button>
+            </div>
+          </Section>
+
+          <Section title="Groq API Key (Fast Speech-to-Text)">
+            <input
+              type="password"
+              value={draftGroqKey}
+              onChange={(e) => setDraftGroqKey(e.target.value)}
+              placeholder="gsk_..."
+              className="w-full bg-input/60 border border-border rounded-lg px-3 py-2.5 text-sm text-warm placeholder:text-warm-muted/50 focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <div className="flex gap-2 mt-2">
+              <button onClick={save} className="w-full bg-secondary text-warm rounded-lg py-2 text-sm hover:bg-accent transition">
+                Save Keys
               </button>
             </div>
           </Section>

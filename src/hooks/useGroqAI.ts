@@ -1,4 +1,4 @@
-import { groqChat } from "@/server/groq.functions";
+import { geminiChat } from "@/server/gemini.functions";
 
 export interface FeedbackPayload {
   scores: {
@@ -15,35 +15,44 @@ export interface FeedbackPayload {
   resources: { title: string; description: string; type: string }[];
 }
 
-async function chat(apiKey: string, prompt: string | undefined, messages: { role: string; content: string }[] | undefined, opts?: { temperature?: number; max_tokens?: number }) {
-  const result = await groqChat({
+async function chat(
+  apiKey: string,
+  prompt: string | undefined,
+  messages: { role: string; content: string }[] | undefined,
+  opts?: { temperature?: number; max_tokens?: number; reasoning_effort?: "low" | "medium" | "high" },
+) {
+  const result = await geminiChat({
     data: {
       prompt,
       messages,
       temperature: opts?.temperature ?? 0.7,
-      max_tokens: opts?.max_tokens ?? 800,
+      max_tokens: opts?.max_tokens ?? 1024,
       apiKeyOverride: apiKey || undefined,
     },
   });
   if (!result.ok) {
-    throw new Error(result.error || "Groq request failed");
+    throw new Error(result.error || "Gemini request failed");
+  }
+  if (!result.content?.trim()) {
+    throw new Error("Empty response from Gemini API.");
   }
   return result.content;
 }
 
 export async function generateText(apiKey: string, prompt: string) {
-  const out = await chat(apiKey, prompt, undefined, { temperature: 0.85, max_tokens: 200 });
+  // gpt-oss-120b counts reasoning toward max_tokens; 200 was often all reasoning and no question.
+  const out = await chat(apiKey, prompt, undefined, { temperature: 0.85, max_tokens: 1024, reasoning_effort: "low" });
   return out.replace(/^["']|["']$/g, "").trim();
 }
 
 export async function generateChatResponse(apiKey: string, messages: { role: string; content: string }[]) {
-  const out = await chat(apiKey, undefined, messages, { temperature: 0.7, max_tokens: 400 });
+  const out = await chat(apiKey, undefined, messages, { temperature: 0.7, max_tokens: 800, reasoning_effort: "low" });
   return out.trim();
 }
 
 export async function generateFeedback(apiKey: string, prompt: string): Promise<FeedbackPayload> {
   try {
-    const out = await chat(apiKey, prompt, undefined, { temperature: 0.4, max_tokens: 900 });
+    const out = await chat(apiKey, prompt, undefined, { temperature: 0.4, max_tokens: 2048, reasoning_effort: "low" });
     const json = extractJson(out);
     return normalizeFeedback(json);
   } catch (e) {
@@ -54,26 +63,26 @@ export async function generateFeedback(apiKey: string, prompt: string): Promise<
 
 export async function testApiKey(apiKey: string): Promise<{ ok: boolean; error?: string }> {
   try {
-    const result = await groqChat({
+    const result = await geminiChat({
       data: {
         prompt: "Say hi",
         temperature: 0,
-        max_tokens: 10,
+        max_tokens: 64,
         apiKeyOverride: apiKey || undefined,
       },
     });
     if (result.ok && result.content) return { ok: true };
-    return { ok: false, error: result.error || "Empty response from Groq API." };
+    return { ok: false, error: result.error || "Empty response from Gemini API." };
   } catch (e: any) {
     return { ok: false, error: e?.message || "Request failed." };
   }
 }
 
-/** True if the server has a configured GROQ_API_KEY (no client key needed). */
+/** True if the server has a configured GEMINI_API_KEY (no client key needed). */
 export async function serverKeyAvailable(): Promise<boolean> {
   try {
-    const result = await groqChat({
-      data: { prompt: "ping", temperature: 0, max_tokens: 1 },
+    const result = await geminiChat({
+      data: { prompt: "ping", temperature: 0, max_tokens: 32 },
     });
     // ok=true means it worked. ok=false with "not configured" means no env key.
     if (result.ok) return true;

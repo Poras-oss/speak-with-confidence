@@ -32,8 +32,8 @@ export function SetupScreen({ onSaved }: Props) {
           Before we begin.
         </h1>
         <p className="text-warm-muted leading-relaxed mb-8">
-          VoxMind uses Groq to generate questions and feedback. You'll need a free
-          API key — it stays on your device.
+          VoxMind uses Gemini 2.5 Flash Lite to generate questions and feedback. You'll need a free
+          Google AI Studio API key — it stays on your device.
         </p>
 
         <ol className="space-y-3 mb-8 text-sm">
@@ -42,12 +42,12 @@ export function SetupScreen({ onSaved }: Props) {
             <span className="text-warm-muted">
               Visit{" "}
               <a
-                href="https://console.groq.com"
+                href="https://aistudio.google.com/apikey"
                 target="_blank"
                 rel="noreferrer"
                 className="text-warm underline underline-offset-4 decoration-border hover:decoration-warm transition"
               >
-                console.groq.com
+                aistudio.google.com/apikey
               </a>{" "}
               and sign in.
             </span>
@@ -55,7 +55,7 @@ export function SetupScreen({ onSaved }: Props) {
           <li className="flex gap-3">
             <span className="text-warm-muted">2.</span>
             <span className="text-warm-muted">
-              Go to "API Keys" and click "Create API Key".
+              Click "Create API Key" and copy it.
             </span>
           </li>
           <li className="flex gap-3">
@@ -69,7 +69,7 @@ export function SetupScreen({ onSaved }: Props) {
             type="password"
             value={key}
             onChange={(e) => setKey(e.target.value)}
-            placeholder="gsk_..."
+            placeholder="AIza..."
             className="w-full bg-input/60 border border-border rounded-xl px-4 py-3.5 text-warm placeholder:text-warm-muted/50 focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition"
           />
           <button

@@ -90,6 +90,23 @@ interface ChatInput {
   temperature?: number;
   max_tokens?: number;
   apiKeyOverride?: string;
+  reasoning_effort?: "low" | "medium" | "high";
+}
+
+function extractMessageContent(message: any): string {
+  const raw = message?.content;
+  if (typeof raw === "string") return raw.trim();
+  if (Array.isArray(raw)) {
+    return raw
+      .map((part) => {
+        if (typeof part === "string") return part;
+        if (part && typeof part.text === "string") return part.text;
+        return "";
+      })
+      .join("")
+      .trim();
+  }
+  return "";
 }
 
 export const groqChat = createServerFn({ method: "POST" })
@@ -101,8 +118,12 @@ export const groqChat = createServerFn({ method: "POST" })
       prompt: input.prompt,
       messages: input.messages,
       temperature: typeof input.temperature === "number" ? input.temperature : 0.7,
-      max_tokens: typeof input.max_tokens === "number" ? input.max_tokens : 800,
+      max_tokens: typeof input.max_tokens === "number" ? input.max_tokens : 1024,
       apiKeyOverride: typeof input.apiKeyOverride === "string" ? input.apiKeyOverride : undefined,
+      reasoning_effort:
+        input.reasoning_effort === "medium" || input.reasoning_effort === "high"
+          ? input.reasoning_effort
+          : "low",
     };
   })
   .handler(async ({ data }) => {
@@ -132,6 +153,9 @@ export const groqChat = createServerFn({ method: "POST" })
           messages: data.messages || [{ role: "user", content: data.prompt }],
           temperature: data.temperature,
           max_tokens: data.max_tokens,
+          max_completion_tokens: data.max_tokens,
+          reasoning_effort: data.reasoning_effort,
+          include_reasoning: false,
           stream: false,
         }),
       });
@@ -140,8 +164,21 @@ export const groqChat = createServerFn({ method: "POST" })
         return { ok: false as const, error: `Groq API ${res.status}: ${text.slice(0, 200)}`, content: "" };
       }
       const json: any = await res.json();
-      const content: string = json?.choices?.[0]?.message?.content ?? "";
-      return { ok: true as const, content: content.trim(), error: null };
+      const content = extractMessageContent(json?.choices?.[0]?.message);
+      if (!content) {
+        const finish = json?.choices?.[0]?.finish_reason;
+        const reasoningTokens = json?.usage?.completion_tokens_details?.reasoning_tokens;
+        console.warn("[Groq Server] Empty content", {
+          finish_reason: finish,
+          usage: json?.usage,
+        });
+        const error =
+          finish === "length"
+            ? `Empty Groq response: token budget spent on reasoning (${reasoningTokens ?? "?"} tokens) with no answer.`
+            : "Empty response from Groq API.";
+        return { ok: false as const, error, content: "" };
+      }
+      return { ok: true as const, content, error: null };
     } catch (e: any) {
       return { ok: false as const, error: e?.message || "Request failed", content: "" };
     }
