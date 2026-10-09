@@ -7,6 +7,10 @@ const MODEL = "openai/gpt-oss-120b";
 
 // Helper to check and enforce limits on the server
 async function enforceServerLimits(): Promise<{ ok: boolean; error?: string }> {
+  // Everything is free for now. Daily limit enforcement is bypassed.
+  return { ok: true };
+
+  /* Original limit enforcement — commented out so all usage is free.
   // Try to get the authenticated user. If Clerk middleware is not wired up on
   // the server (no clerkMiddleware in the Nitro entry), auth() may throw or
   // return null — in that case we skip limit enforcement so questions still load.
@@ -82,6 +86,7 @@ async function enforceServerLimits(): Promise<{ ok: boolean; error?: string }> {
     // Don't block the user if the DB check fails — just let it through
     return { ok: true };
   }
+  */
 }
 
 interface ChatInput {

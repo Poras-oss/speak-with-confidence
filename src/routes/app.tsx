@@ -164,24 +164,25 @@ function VoxMindApp() {
 
   const startMode = useCallback(
     (mode: ModeId) => {
-      const isPremium = profile?.plan === "premium";
-      const hasCustomKey = !!geminiApiKey;
-
-      if (!isPremium && !hasCustomKey) {
-        if (mode === "extempore") {
-          if ((profile?.extempore_count || 0) >= 5) {
-            setPremiumOpen(true);
-            return;
-          }
-          incrementUsage();
-        } else if (mode === "technical" && resume) {
-          setPremiumOpen(true);
-          return;
-        } else if (mode === "devsim" || mode === "pitch" || mode === "interview") {
-          setPremiumOpen(true);
-          return;
-        }
-      }
+      // Everything is free for now. Premium / daily-limit gates are commented out.
+      // const isPremium = profile?.plan === "premium";
+      // const hasCustomKey = !!geminiApiKey;
+      //
+      // if (!isPremium && !hasCustomKey) {
+      //   if (mode === "extempore") {
+      //     if ((profile?.extempore_count || 0) >= 5) {
+      //       setPremiumOpen(true);
+      //       return;
+      //     }
+      //     incrementUsage();
+      //   } else if (mode === "technical" && resume) {
+      //     setPremiumOpen(true);
+      //     return;
+      //   } else if (mode === "devsim" || mode === "pitch" || mode === "interview") {
+      //     setPremiumOpen(true);
+      //     return;
+      //   }
+      // }
 
       setActiveMode(mode);
       setTranscript("");
@@ -311,12 +312,13 @@ function VoxMindApp() {
           totalSessions={sessions.length}
           resume={resume}
           onResumeChange={(r) => {
-            const isPremium = profile?.plan === "premium";
-            const hasCustomKey = !!geminiApiKey;
-            if (r && !isPremium && !hasCustomKey) {
-              setPremiumOpen(true);
-              return;
-            }
+            // Resume upload is free for now. Premium gate commented out.
+            // const isPremium = profile?.plan === "premium";
+            // const hasCustomKey = !!geminiApiKey;
+            // if (r && !isPremium && !hasCustomKey) {
+            //   setPremiumOpen(true);
+            //   return;
+            // }
             setResume(r);
           }}
           modelReady={modelReady}

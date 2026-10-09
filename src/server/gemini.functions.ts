@@ -7,6 +7,10 @@ const MODEL = "gemini-3.5-flash-lite";
 
 // Helper to check and enforce limits on the server
 async function enforceServerLimits(): Promise<{ ok: boolean; error?: string }> {
+  // Everything is free for now. Daily limit enforcement is bypassed.
+  return { ok: true };
+
+  /* Original limit enforcement — commented out so all usage is free.
   let userId: string | null = null;
   try {
     const session = await auth();
@@ -70,6 +74,7 @@ async function enforceServerLimits(): Promise<{ ok: boolean; error?: string }> {
     console.error("[Gemini Server] Supabase limit check error:", err);
     return { ok: true };
   }
+  */
 }
 
 interface ChatInput {
