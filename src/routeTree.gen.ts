@@ -9,27 +9,27 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as BlogIndexRouteImport } from './routes/blog/index'
-import { Route as BlogStopSayingUmFillerWordsRouteImport } from './routes/blog/stop-saying-um-filler-words'
-import { Route as BlogPhysiologyStageFrightVagusNerveRouteImport } from './routes/blog/physiology-stage-fright-vagus-nerve'
-import { Route as BlogOvercomingGlossophobiaCbtRouteImport } from './routes/blog/overcoming-glossophobia-cbt'
-import { Route as BlogIntrovertsPublicSpeakingAdvantageRouteImport } from './routes/blog/introverts-public-speaking-advantage'
-import { Route as BlogImposterSyndromeTechnicalInterviewsRouteImport } from './routes/blog/imposter-syndrome-technical-interviews'
-import { Route as BlogExposureTherapyPublicSpeakingRouteImport } from './routes/blog/exposure-therapy-public-speaking'
-import { Route as BlogBestAiMockInterviewStrategiesRouteImport } from './routes/blog/best-ai-mock-interview-strategies'
-import { Route as BlogAiInterviewPracticeGuideRouteImport } from './routes/blog/ai-interview-practice-guide'
 import { Route as BlogSlugRouteImport } from './routes/blog/$slug'
+import { Route as BlogAiInterviewPracticeGuideRouteImport } from './routes/blog/ai-interview-practice-guide'
+import { Route as BlogBestAiMockInterviewStrategiesRouteImport } from './routes/blog/best-ai-mock-interview-strategies'
+import { Route as BlogExposureTherapyPublicSpeakingRouteImport } from './routes/blog/exposure-therapy-public-speaking'
+import { Route as BlogImposterSyndromeTechnicalInterviewsRouteImport } from './routes/blog/imposter-syndrome-technical-interviews'
+import { Route as BlogIntrovertsPublicSpeakingAdvantageRouteImport } from './routes/blog/introverts-public-speaking-advantage'
+import { Route as BlogOvercomingGlossophobiaCbtRouteImport } from './routes/blog/overcoming-glossophobia-cbt'
+import { Route as BlogPhysiologyStageFrightVagusNerveRouteImport } from './routes/blog/physiology-stage-fright-vagus-nerve'
+import { Route as BlogStopSayingUmFillerWordsRouteImport } from './routes/blog/stop-saying-um-filler-words'
 
-const AppRoute = AppRouteImport.update({
-  id: '/app',
-  path: '/app',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogIndexRoute = BlogIndexRouteImport.update({
@@ -37,40 +37,15 @@ const BlogIndexRoute = BlogIndexRouteImport.update({
   path: '/blog/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BlogStopSayingUmFillerWordsRoute =
-  BlogStopSayingUmFillerWordsRouteImport.update({
-    id: '/blog/stop-saying-um-filler-words',
-    path: '/blog/stop-saying-um-filler-words',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const BlogPhysiologyStageFrightVagusNerveRoute =
-  BlogPhysiologyStageFrightVagusNerveRouteImport.update({
-    id: '/blog/physiology-stage-fright-vagus-nerve',
-    path: '/blog/physiology-stage-fright-vagus-nerve',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const BlogOvercomingGlossophobiaCbtRoute =
-  BlogOvercomingGlossophobiaCbtRouteImport.update({
-    id: '/blog/overcoming-glossophobia-cbt',
-    path: '/blog/overcoming-glossophobia-cbt',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const BlogIntrovertsPublicSpeakingAdvantageRoute =
-  BlogIntrovertsPublicSpeakingAdvantageRouteImport.update({
-    id: '/blog/introverts-public-speaking-advantage',
-    path: '/blog/introverts-public-speaking-advantage',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const BlogImposterSyndromeTechnicalInterviewsRoute =
-  BlogImposterSyndromeTechnicalInterviewsRouteImport.update({
-    id: '/blog/imposter-syndrome-technical-interviews',
-    path: '/blog/imposter-syndrome-technical-interviews',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const BlogExposureTherapyPublicSpeakingRoute =
-  BlogExposureTherapyPublicSpeakingRouteImport.update({
-    id: '/blog/exposure-therapy-public-speaking',
-    path: '/blog/exposure-therapy-public-speaking',
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogAiInterviewPracticeGuideRoute =
+  BlogAiInterviewPracticeGuideRouteImport.update({
+    id: '/blog/ai-interview-practice-guide',
+    path: '/blog/ai-interview-practice-guide',
     getParentRoute: () => rootRouteImport,
   } as any)
 const BlogBestAiMockInterviewStrategiesRoute =
@@ -79,17 +54,42 @@ const BlogBestAiMockInterviewStrategiesRoute =
     path: '/blog/best-ai-mock-interview-strategies',
     getParentRoute: () => rootRouteImport,
   } as any)
-const BlogAiInterviewPracticeGuideRoute =
-  BlogAiInterviewPracticeGuideRouteImport.update({
-    id: '/blog/ai-interview-practice-guide',
-    path: '/blog/ai-interview-practice-guide',
+const BlogExposureTherapyPublicSpeakingRoute =
+  BlogExposureTherapyPublicSpeakingRouteImport.update({
+    id: '/blog/exposure-therapy-public-speaking',
+    path: '/blog/exposure-therapy-public-speaking',
     getParentRoute: () => rootRouteImport,
   } as any)
-const BlogSlugRoute = BlogSlugRouteImport.update({
-  id: '/blog/$slug',
-  path: '/blog/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const BlogImposterSyndromeTechnicalInterviewsRoute =
+  BlogImposterSyndromeTechnicalInterviewsRouteImport.update({
+    id: '/blog/imposter-syndrome-technical-interviews',
+    path: '/blog/imposter-syndrome-technical-interviews',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const BlogIntrovertsPublicSpeakingAdvantageRoute =
+  BlogIntrovertsPublicSpeakingAdvantageRouteImport.update({
+    id: '/blog/introverts-public-speaking-advantage',
+    path: '/blog/introverts-public-speaking-advantage',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const BlogOvercomingGlossophobiaCbtRoute =
+  BlogOvercomingGlossophobiaCbtRouteImport.update({
+    id: '/blog/overcoming-glossophobia-cbt',
+    path: '/blog/overcoming-glossophobia-cbt',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const BlogPhysiologyStageFrightVagusNerveRoute =
+  BlogPhysiologyStageFrightVagusNerveRouteImport.update({
+    id: '/blog/physiology-stage-fright-vagus-nerve',
+    path: '/blog/physiology-stage-fright-vagus-nerve',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const BlogStopSayingUmFillerWordsRoute =
+  BlogStopSayingUmFillerWordsRouteImport.update({
+    id: '/blog/stop-saying-um-filler-words',
+    path: '/blog/stop-saying-um-filler-words',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -196,18 +196,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/app': {
-      id: '/app'
-      path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof AppRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog/': {
@@ -217,53 +217,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/blog/stop-saying-um-filler-words': {
-      id: '/blog/stop-saying-um-filler-words'
-      path: '/blog/stop-saying-um-filler-words'
-      fullPath: '/blog/stop-saying-um-filler-words'
-      preLoaderRoute: typeof BlogStopSayingUmFillerWordsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/blog/physiology-stage-fright-vagus-nerve': {
-      id: '/blog/physiology-stage-fright-vagus-nerve'
-      path: '/blog/physiology-stage-fright-vagus-nerve'
-      fullPath: '/blog/physiology-stage-fright-vagus-nerve'
-      preLoaderRoute: typeof BlogPhysiologyStageFrightVagusNerveRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/blog/overcoming-glossophobia-cbt': {
-      id: '/blog/overcoming-glossophobia-cbt'
-      path: '/blog/overcoming-glossophobia-cbt'
-      fullPath: '/blog/overcoming-glossophobia-cbt'
-      preLoaderRoute: typeof BlogOvercomingGlossophobiaCbtRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/blog/introverts-public-speaking-advantage': {
-      id: '/blog/introverts-public-speaking-advantage'
-      path: '/blog/introverts-public-speaking-advantage'
-      fullPath: '/blog/introverts-public-speaking-advantage'
-      preLoaderRoute: typeof BlogIntrovertsPublicSpeakingAdvantageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/blog/imposter-syndrome-technical-interviews': {
-      id: '/blog/imposter-syndrome-technical-interviews'
-      path: '/blog/imposter-syndrome-technical-interviews'
-      fullPath: '/blog/imposter-syndrome-technical-interviews'
-      preLoaderRoute: typeof BlogImposterSyndromeTechnicalInterviewsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/blog/exposure-therapy-public-speaking': {
-      id: '/blog/exposure-therapy-public-speaking'
-      path: '/blog/exposure-therapy-public-speaking'
-      fullPath: '/blog/exposure-therapy-public-speaking'
-      preLoaderRoute: typeof BlogExposureTherapyPublicSpeakingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/blog/best-ai-mock-interview-strategies': {
-      id: '/blog/best-ai-mock-interview-strategies'
-      path: '/blog/best-ai-mock-interview-strategies'
-      fullPath: '/blog/best-ai-mock-interview-strategies'
-      preLoaderRoute: typeof BlogBestAiMockInterviewStrategiesRouteImport
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog/ai-interview-practice-guide': {
@@ -273,11 +231,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogAiInterviewPracticeGuideRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/blog/$slug': {
-      id: '/blog/$slug'
-      path: '/blog/$slug'
-      fullPath: '/blog/$slug'
-      preLoaderRoute: typeof BlogSlugRouteImport
+    '/blog/best-ai-mock-interview-strategies': {
+      id: '/blog/best-ai-mock-interview-strategies'
+      path: '/blog/best-ai-mock-interview-strategies'
+      fullPath: '/blog/best-ai-mock-interview-strategies'
+      preLoaderRoute: typeof BlogBestAiMockInterviewStrategiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/exposure-therapy-public-speaking': {
+      id: '/blog/exposure-therapy-public-speaking'
+      path: '/blog/exposure-therapy-public-speaking'
+      fullPath: '/blog/exposure-therapy-public-speaking'
+      preLoaderRoute: typeof BlogExposureTherapyPublicSpeakingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/imposter-syndrome-technical-interviews': {
+      id: '/blog/imposter-syndrome-technical-interviews'
+      path: '/blog/imposter-syndrome-technical-interviews'
+      fullPath: '/blog/imposter-syndrome-technical-interviews'
+      preLoaderRoute: typeof BlogImposterSyndromeTechnicalInterviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/introverts-public-speaking-advantage': {
+      id: '/blog/introverts-public-speaking-advantage'
+      path: '/blog/introverts-public-speaking-advantage'
+      fullPath: '/blog/introverts-public-speaking-advantage'
+      preLoaderRoute: typeof BlogIntrovertsPublicSpeakingAdvantageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/overcoming-glossophobia-cbt': {
+      id: '/blog/overcoming-glossophobia-cbt'
+      path: '/blog/overcoming-glossophobia-cbt'
+      fullPath: '/blog/overcoming-glossophobia-cbt'
+      preLoaderRoute: typeof BlogOvercomingGlossophobiaCbtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/physiology-stage-fright-vagus-nerve': {
+      id: '/blog/physiology-stage-fright-vagus-nerve'
+      path: '/blog/physiology-stage-fright-vagus-nerve'
+      fullPath: '/blog/physiology-stage-fright-vagus-nerve'
+      preLoaderRoute: typeof BlogPhysiologyStageFrightVagusNerveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/stop-saying-um-filler-words': {
+      id: '/blog/stop-saying-um-filler-words'
+      path: '/blog/stop-saying-um-filler-words'
+      fullPath: '/blog/stop-saying-um-filler-words'
+      preLoaderRoute: typeof BlogStopSayingUmFillerWordsRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
