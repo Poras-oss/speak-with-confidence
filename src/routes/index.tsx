@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
+import { OutclassBanner } from "@/components/OutclassBanner";
 
 const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
 const clerkEnabled = !!CLERK_KEY && !CLERK_KEY.includes("REPLACE_ME");
@@ -75,6 +76,7 @@ function Landing() {
       <Science />
       <Testimonials />
       <FinalCTA />
+      <OutclassBanner />
       <Footer />
     </div>
   );
